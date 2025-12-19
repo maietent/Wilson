@@ -23,8 +23,6 @@ void kmain(void)
     bool is_debug = false;
 #endif
 
-    //fb[0] = 0xFFFFFFFF;
-
     char buf[256];
     sprintf(buf, "fb_width: %d, fb_height: %d, is_debug: %d", fb_width, fb_height, is_debug);
     draw_string(fb, pitch, 1, 1, buf, 0xFFFFFF);
