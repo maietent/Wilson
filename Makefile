@@ -12,12 +12,12 @@ AR := x86_64-elf-ar
 
 # qemu flags
 QEMUFLAGS := -m 512M
-IMAGE_NAME := Astraea
+IMAGE_NAME := Wilson
 
 # disk image settings
 DISK_SIZE := 512M
-DISK_IMAGE := isobuilds/Astraea.img
-DISK_IMAGE_DEBUG := isobuilds/Astraea_debug.img
+DISK_IMAGE := isobuilds/Wilson.img
+DISK_IMAGE_DEBUG := isobuilds/WilsonD.img
 
 # compiler and linker flags
 CFLAGS := -m64 -mcmodel=kernel -ffreestanding -fno-stack-protector -fno-stack-check -nostdlib -O2 -g -Wall -Wextra
@@ -192,8 +192,8 @@ disk-release: bin/kernel.elf limine/limine
 
 
 # build ISO (legacy support)
-isobuilds/Astraea_debug.iso: EXTRA_CFLAGS := -DDEBUG_BUILD
-isobuilds/Astraea_debug.iso: bin/kernel.elf limine/limine
+isobuilds/Wilson_debug.iso: EXTRA_CFLAGS := -DDEBUG_BUILD
+isobuilds/Wilson_debug.iso: bin/kernel.elf limine/limine
 	@echo "📀 Building debug ISO..."
 	@rm -rf isodirs
 	@mkdir -p isodirs/boot/limine
@@ -205,12 +205,12 @@ isobuilds/Astraea_debug.iso: bin/kernel.elf limine/limine
 	@xorriso -as mkisofs -R -J -b boot/limine/limine-bios-cd.bin -no-emul-boot \
 		-boot-load-size 4 -boot-info-table -hfsplus -apm-block-size 2048 \
 		--efi-boot boot/limine/limine-uefi-cd.bin -efi-boot-part --efi-boot-image \
-		--protective-msdos-label isodirs -o isobuilds/Astraea_debug.iso > /dev/null 2>&1
-	@./limine/limine bios-install isobuilds/Astraea_debug.iso > /dev/null 2>&1
+		--protective-msdos-label isodirs -o isobuilds/Wilson_debug.iso > /dev/null 2>&1
+	@./limine/limine bios-install isobuilds/Wilson_debug.iso > /dev/null 2>&1
 	@rm -rf isodirs
-	@echo "✅ Debug ISO created: isobuilds/Astraea_debug.iso"
+	@echo "✅ Debug ISO created: isobuilds/Wilson_debug.iso"
 
-isobuilds/Astraea.iso: bin/kernel.elf limine/limine
+isobuilds/Wilson.iso: bin/kernel.elf limine/limine
 	@echo "📀 Building release ISO..."
 	@rm -rf isodirs
 	@mkdir -p isodirs/boot/limine
@@ -222,10 +222,10 @@ isobuilds/Astraea.iso: bin/kernel.elf limine/limine
 	@xorriso -as mkisofs -R -J -b boot/limine/limine-bios-cd.bin -no-emul-boot \
 		-boot-load-size 4 -boot-info-table -hfsplus -apm-block-size 2048 \
 		--efi-boot boot/limine/limine-uefi-cd.bin -efi-boot-part --efi-boot-image \
-		--protective-msdos-label isodirs -o isobuilds/Astraea.iso > /dev/null 2>&1
-	@./limine/limine bios-install isobuilds/Astraea.iso > /dev/null 2>&1
+		--protective-msdos-label isodirs -o isobuilds/Wilson.iso > /dev/null 2>&1
+	@./limine/limine bios-install isobuilds/Wilson.iso > /dev/null 2>&1
 	@rm -rf isodirs
-	@echo "✅ Release ISO created: isobuilds/Astraea.iso"
+	@echo "✅ Release ISO created: isobuilds/Wilson.iso"
 
 # cleanup
 clean:
@@ -239,17 +239,17 @@ clean_no_iso:
 	@echo "✅ Clean complete"
 
 # separate build targets
-debug: isobuilds/Astraea_debug.iso
-release: isobuilds/Astraea.iso
+debug: isobuilds/Wilson_debug.iso
+release: isobuilds/Wilson.iso
 
 # run in qemu with ISO (legacy)
 run-debug: debug
 	@echo "🚀 Launching QEMU (debug mode with ISO)..."
-	@qemu-system-x86_64 -M q35 -cdrom isobuilds/Astraea_debug.iso $(QEMUFLAGS)
+	@qemu-system-x86_64 -M q35 -cdrom isobuilds/Wilson_debug.iso $(QEMUFLAGS)
 
 run-release: release
 	@echo "🚀 Launching QEMU (release mode with ISO)..."
-	@qemu-system-x86_64 -M q35 -cdrom isobuilds/Astraea.iso $(QEMUFLAGS)
+	@qemu-system-x86_64 -M q35 -cdrom isobuilds/Wilson.iso $(QEMUFLAGS)
 
 # run in qemu with disk image
 run-disk-debug: disk-debug
