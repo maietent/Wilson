@@ -14,3 +14,5 @@ size_t get_fb_height(void);
 size_t get_fb_pitch(void);
 
 bool init_framebuffer(void);
+void fb_draw_pixel(uint32_t *fb, size_t pitch, size_t x, size_t y, uint32_t color);
+void fb_clear();

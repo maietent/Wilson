@@ -41,3 +41,19 @@ bool init_framebuffer(void)
 
     return true;
 }
+
+void fb_draw_pixel(uint32_t *fb, size_t pitch, size_t x, size_t y, uint32_t color)
+{
+    fb[y * pitch + x] = color;
+}
+
+void fb_clear()
+{
+    for (size_t y = 0; y < height; y++)
+    {
+        for (size_t x = 0; x < width; x++)
+        {
+            fb_draw_pixel(fb_ptr, pitch, x, y, 0x000000);
+        }
+    }
+}

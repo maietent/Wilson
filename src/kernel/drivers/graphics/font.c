@@ -1,5 +1,6 @@
 #include "font.h"
 #include "fontarrays.h"
+#include "framebuffer.h"
 
 void draw_char(uint32_t *fb, size_t pitch, size_t x, size_t y, char c, uint32_t color)
 {
@@ -14,11 +15,11 @@ void draw_char(uint32_t *fb, size_t pitch, size_t x, size_t y, char c, uint32_t 
         {
             if (c == ' ' || !(glyph[row] & (1 << (7- col))))
             {
-                fb[(y + row) * pitch + (x + col)] = 0x000000;
+                fb_draw_pixel(fb, pitch, x + col, y + row, 0x000000);
             }
             else
             {
-                fb[(y + row) * pitch + (x + col)] = color;
+                fb_draw_pixel(fb, pitch, x + col, y + row, color);
             }
         }
     }
