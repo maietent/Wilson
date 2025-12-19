@@ -5,19 +5,23 @@ size_t width = 0;
 size_t height = 0;
 size_t pitch = 0;
 
-uint32_t *get_fb(void) {
+uint32_t *get_fb(void)
+{
     return fb_ptr;
 }
 
-size_t get_fb_width(void) {
+size_t get_fb_width(void)
+{
     return width;
 }
 
-size_t get_fb_height(void) {
+size_t get_fb_height(void)
+{
     return height;
 }
 
-size_t get_fb_pitch(void) {
+size_t get_fb_pitch(void)
+{
     return pitch;
 }
 

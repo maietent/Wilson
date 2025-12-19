@@ -17,10 +17,16 @@ void kmain(void)
     size_t fb_height = get_fb_height();
     size_t pitch = get_fb_pitch();
 
+#ifdef DEBUG_BUILD
+    bool is_debug = true;
+#else
+    bool is_debug = false;
+#endif
+
     //fb[0] = 0xFFFFFFFF;
 
     char buf[256];
-    sprintf(buf, "fb_width: %i, fb_height: %i", fb_width, fb_height);
+    sprintf(buf, "fb_width: %d, fb_height: %d, is_debug: %d", fb_width, fb_height, is_debug);
     draw_string(fb, pitch, 1, 1, buf, 0xFFFFFF);
 
     CU_halt();
