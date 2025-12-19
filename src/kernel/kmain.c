@@ -4,10 +4,12 @@
 #include "moneycat.h"
 #include "font.h"
 #include "printf.h"
+#include "gdt.h"
 
 void kmain(void)
 {
     limine_init();
+    gdt_init();
 
     if(!init_framebuffer())
         CU_halt();
