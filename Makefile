@@ -192,8 +192,8 @@ disk-release: bin/kernel.elf limine/limine
 
 
 # build ISO (legacy support)
-isobuilds/Wilson_debug.iso: EXTRA_CFLAGS := -DDEBUG_BUILD
-isobuilds/Wilson_debug.iso: bin/kernel.elf limine/limine
+isobuilds/WilsonD.iso: EXTRA_CFLAGS := -DDEBUG_BUILD
+isobuilds/WilsonD.iso: bin/kernel.elf limine/limine
 	@echo "📀 Building debug ISO..."
 	@rm -rf isodirs
 	@mkdir -p isodirs/boot/limine
@@ -205,10 +205,10 @@ isobuilds/Wilson_debug.iso: bin/kernel.elf limine/limine
 	@xorriso -as mkisofs -R -J -b boot/limine/limine-bios-cd.bin -no-emul-boot \
 		-boot-load-size 4 -boot-info-table -hfsplus -apm-block-size 2048 \
 		--efi-boot boot/limine/limine-uefi-cd.bin -efi-boot-part --efi-boot-image \
-		--protective-msdos-label isodirs -o isobuilds/Wilson_debug.iso > /dev/null 2>&1
-	@./limine/limine bios-install isobuilds/Wilson_debug.iso > /dev/null 2>&1
+		--protective-msdos-label isodirs -o isobuilds/WilsonD.iso > /dev/null 2>&1
+	@./limine/limine bios-install isobuilds/WilsonD.iso > /dev/null 2>&1
 	@rm -rf isodirs
-	@echo "✅ Debug ISO created: isobuilds/Wilson_debug.iso"
+	@echo "✅ Debug ISO created: isobuilds/WilsonD.iso"
 
 isobuilds/Wilson.iso: bin/kernel.elf limine/limine
 	@echo "📀 Building release ISO..."
@@ -239,13 +239,13 @@ clean_no_iso:
 	@echo "✅ Clean complete"
 
 # separate build targets
-debug: isobuilds/Wilson_debug.iso
+debug: isobuilds/WilsonD.iso
 release: isobuilds/Wilson.iso
 
 # run in qemu with ISO (legacy)
 run-debug: debug
 	@echo "🚀 Launching QEMU (debug mode with ISO)..."
-	@qemu-system-x86_64 -M q35 -cdrom isobuilds/Wilson_debug.iso $(QEMUFLAGS)
+	@qemu-system-x86_64 -M q35 -cdrom isobuilds/WilsonD.iso $(QEMUFLAGS)
 
 run-release: release
 	@echo "🚀 Launching QEMU (release mode with ISO)..."
