@@ -14,11 +14,6 @@ AR := x86_64-elf-ar
 QEMUFLAGS := -m 512M
 IMAGE_NAME := Wilson
 
-# disk image settings
-DISK_SIZE := 512M
-DISK_IMAGE := isobuilds/Wilson.img
-DISK_IMAGE_DEBUG := isobuilds/WilsonD.img
-
 # compiler and linker flags
 CFLAGS := -m64 -mcmodel=kernel -ffreestanding -fno-stack-protector -fno-stack-check -nostdlib -O2 -g -Wall -Wextra
 LDFLAGS := -T linker.ld -nostdlib -static
@@ -38,7 +33,7 @@ $(shell mkdir -p bin isobuilds)
 # silent mode by default
 .SILENT:
 
-.PHONY: all run-debug run-release debug release clean clean_no_iso qemu-debug qemu-release disk-debug disk-release
+.PHONY: all run-debug run-release debug release clean clean_no_iso qemu-debug qemu-release
 
 # default target
 all: release
@@ -104,94 +99,7 @@ limine/limine:
 		echo "✅ Limine already present"; \
 	fi
 
-# build disk image
-define make_disk
-@rm -f $(1)
-@echo "💾 Creating disk image $(1)..."
-@dd if=/dev/zero of=$(1) bs=1M count=512 status=none
-@LOOP_DEV=$$(sudo losetup -f --show -P $(1)); \
-sleep 1; \
-\
-# BIOS boot partition
-sudo parted -s $$LOOP_DEV mklabel gpt; \
-sudo parted -s $$LOOP_DEV mkpart primary 1MiB 2MiB; \
-sudo parted -s $$LOOP_DEV set 1 bios_grub on; \
-\
-# FAT32 boot partition
-sudo parted -s $$LOOP_DEV mkpart primary fat32 2MiB 102MiB; \
-sudo parted -s $$LOOP_DEV set 2 esp on; \
-\
-# ext2 root partition
-sudo parted -s $$LOOP_DEV mkpart primary ext2 102MiB 100%; \
-\
-# filesystems
-sudo mkfs.vfat -F 32 $${LOOP_DEV}p2 > /dev/null 2>&1; \
-sudo mkfs.ext2 -F $${LOOP_DEV}p3 > /dev/null 2>&1; \
-\
-# mount FAT32
-mkdir -p mnt_boot mnt_root; \
-sudo mount $${LOOP_DEV}p2 mnt_boot; \
-\
-# install limine BIOS bootloader
-sudo cp limine/limine-bios.sys mnt_boot/; \
-sudo limine/limine-bios-install $$LOOP_DEV; \
-\
-# copy kernel and config
-sudo mkdir -p mnt_boot/boot; \
-sudo cp bin/kernel.elf mnt_boot/boot/; \
-sudo cp limine.conf mnt_boot/boot/; \
-\
-# mount root partition
-sudo mount $${LOOP_DEV}p3 mnt_root; \
-sudo mkdir -p mnt_root/{bin,boot,dev,etc,home,lib,mnt,opt,proc,root,sbin,srv,sys,tmp,usr,var}; \
-sudo mkdir -p mnt_root/usr/{bin,lib,local,sbin,share}; \
-sudo mkdir -p mnt_root/var/{log,tmp}; \
-\
-# cleanup
-sudo umount mnt_boot; \
-sudo umount mnt_root; \
-sudo losetup -d $$LOOP_DEV; \
-rm -rf mnt_boot mnt_root; \
-echo "✅ Disk image created: $(1)"
-endef
-
-disk-debug: EXTRA_CFLAGS := -DDEBUG_BUILD
-disk-debug: bin/kernel.elf limine/limine
-	$(call make_disk,$(DISK_IMAGE_DEBUG))
-
-disk-release: bin/kernel.elf limine/limine
-		@echo "💾 Creating release disk image..."
-		@rm -f $(DISK_IMAGE)
-		@dd if=/dev/zero of=$(DISK_IMAGE) bs=1M count=512 status=none
-		@bash -c '\
-		parted -s $(DISK_IMAGE) mklabel gpt; \
-		parted -s $(DISK_IMAGE) mkpart primary fat32 1MiB 101MiB; \
-		parted -s $(DISK_IMAGE) set 1 esp on; \
-		parted -s $(DISK_IMAGE) mkpart primary ext2 101MiB 100%; \
-		LOOP_DEV=$$(sudo losetup -f --show -P $(DISK_IMAGE)); \
-		sleep 1; \
-		sudo mkfs.vfat -F 32 $${LOOP_DEV}p1; \
-		sudo mkfs.ext2 -F $${LOOP_DEV}p2; \
-		mkdir -p mnt_boot mnt_root; \
-		sudo mount $${LOOP_DEV}p1 mnt_boot; \
-		sudo mkdir -p mnt_boot/EFI/BOOT; \
-		sudo mkdir -p mnt_boot/boot; \
-		sudo cp limine/BOOTX64.EFI mnt_boot/EFI/BOOT/; \
-		sudo cp bin/kernel.elf mnt_boot/boot/; \
-		sudo cp limine.conf mnt_boot/boot/; \
-		sudo mount $${LOOP_DEV}p2 mnt_root; \
-		sudo mkdir -p mnt_root/{bin,boot,dev,etc,home,lib,mnt,opt,proc,root,sbin,srv,sys,tmp,usr,var}; \
-		sudo mkdir -p mnt_root/usr/{bin,lib,local,sbin,share}; \
-		sudo mkdir -p mnt_root/var/{log,tmp}; \
-		sudo umount mnt_boot; \
-		sudo umount mnt_root; \
-		sudo losetup -d $${LOOP_DEV}; \
-		rm -rf mnt_boot mnt_root; \
-		'
-		@echo "✅ Release disk image created: $(DISK_IMAGE)"
-
-
-# build ISO (legacy support)
+# build ISO
 isobuilds/WilsonD.iso: EXTRA_CFLAGS := -DDEBUG_BUILD
 isobuilds/WilsonD.iso: bin/kernel.elf limine/limine
 	@echo "📀 Building debug ISO..."
@@ -230,11 +138,11 @@ isobuilds/Wilson.iso: bin/kernel.elf limine/limine
 # cleanup
 clean:
 	@echo "🧹 Cleaning all build artifacts..."
-	@rm -rf bin $(KERNEL_OBJ) isobuilds/*.iso isobuilds/*.img limine isodirs mnt_boot mnt_root
+	@rm -rf bin $(KERNEL_OBJ) isobuilds/*.iso limine isodirs mnt_boot mnt_root
 	@echo "✅ Clean complete"
 
 clean_no_iso:
-	@echo "🧹 Cleaning build artifacts (keeping ISOs and disk images)..."
+	@echo "🧹 Cleaning build artifacts (keeping ISOs)..."
 	@rm -rf bin $(KERNEL_OBJ) limine isodirs mnt_boot mnt_root
 	@echo "✅ Clean complete"
 
@@ -242,20 +150,11 @@ clean_no_iso:
 debug: isobuilds/WilsonD.iso
 release: isobuilds/Wilson.iso
 
-# run in qemu with ISO (legacy)
+# run in qemu with ISO
 run-debug: debug
-	@echo "🚀 Launching QEMU (debug mode with ISO)..."
+	@echo "🚀 Launching QEMU..."
 	@qemu-system-x86_64 -M q35 -cdrom isobuilds/WilsonD.iso $(QEMUFLAGS)
 
 run-release: release
-	@echo "🚀 Launching QEMU (release mode with ISO)..."
+	@echo "🚀 Launching QEMU..."
 	@qemu-system-x86_64 -M q35 -cdrom isobuilds/Wilson.iso $(QEMUFLAGS)
-
-# run in qemu with disk image
-run-disk-debug: disk-debug
-	@echo "🚀 Launching QEMU (debug mode with disk image)..."
-	@qemu-system-x86_64 -M q35 -drive file=$(DISK_IMAGE_DEBUG),format=raw $(QEMUFLAGS)
-
-run-disk-release: disk-release
-	@echo "🚀 Launching QEMU (release mode with disk image)..."
-	@qemu-system-x86_64 -M q35 -drive file=$(DISK_IMAGE),format=raw $(QEMUFLAGS)
