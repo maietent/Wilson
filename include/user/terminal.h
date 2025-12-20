@@ -8,4 +8,5 @@ void t_set_color(uint32_t color);
 void t_newline();
 void t_putchar(char c);
 void t_drawstring(const char* str);
+void t_printf(const char* str, ...);
 bool init_terminal();

@@ -1,6 +1,7 @@
 #include "terminal.h"
 #include "font.h"
 #include "framebuffer.h"
+#include "printf.h"
 
 static uint32_t *t_fb;
 static size_t t_fb_pitch;
@@ -60,6 +61,18 @@ void t_drawstring(const char* str)
         t_putchar(*str);
         str++;
     }
+}
+
+void t_printf(const char* str, ...)
+{
+    char buf[512];
+    va_list args;
+
+    va_start(args, str);
+    vsnprintf(buf, sizeof(buf), str, args);
+    va_end(args);
+
+    t_drawstring(buf);
 }
 
 bool init_terminal()
