@@ -13,13 +13,13 @@ void kmain(void)
     gdt_init();
     idt_init();
 
-    if(!init_framebuffer())
+    if (!init_framebuffer())
         CU_halt();
 
     uint32_t *fb = get_fb();
     size_t fb_width = get_fb_width();
     size_t fb_height = get_fb_height();
-    size_t pitch = get_fb_pitch();
+    size_t fb_pitch = get_fb_pitch();
 
 #ifdef DEBUG_BUILD
     bool is_debug = true;
@@ -28,8 +28,8 @@ void kmain(void)
 #endif
 
     char buf[256];
-    snprintf(buf, sizeof(buf), "fb_width: %d, fb_height: %d, is_debug: %d", fb_width, fb_height, is_debug);
-    draw_string(fb, pitch, 1, 1, buf, 0xFFFFFF);
+    snprintf(buf, sizeof(buf), "FB Resolution: %dx%d, is_debug: %d", fb_width, fb_height, is_debug);
+    draw_string(fb, fb_pitch, 1, 1, buf, 0xFFFFFF);
 
     CU_halt();
 }

@@ -28,7 +28,7 @@ size_t get_fb_pitch(void)
 bool init_framebuffer(void)
 {
     struct limine_framebuffer *framebuffer = get_framebuffer();
-    if(!framebuffer)
+    if (!framebuffer)
         return false;
 
     fb_ptr = framebuffer->address;
@@ -36,7 +36,7 @@ bool init_framebuffer(void)
     height = framebuffer->height;
     pitch = framebuffer->pitch / 4;
 
-    if(!fb_ptr || !width || !height || !pitch)
+    if (!fb_ptr || !width || !height || !pitch)
         return false;
 
     return true;
