@@ -28,7 +28,7 @@ void kmain(void)
 #endif
 
     char buf[256];
-    sprintf(buf, "fb_width: %d, fb_height: %d, is_debug: %d", fb_width, fb_height, is_debug);
+    snprintf(buf, sizeof(buf), "fb_width: %d, fb_height: %d, is_debug: %d", fb_width, fb_height, is_debug);
     draw_string(fb, pitch, 1, 1, buf, 0xFFFFFF);
 
     CU_halt();
