@@ -6,12 +6,11 @@ void draw_char(uint32_t *fb, size_t pitch, size_t x, size_t y, char c, uint32_t 
 {
     if ((unsigned char) c > 127) return;
 
-    size_t font_height = 14;
-    const uint8_t *glyph = &AVGA2_8x14[(unsigned char)c * font_height];
+    const uint8_t *glyph = &AVGA2_8x14[(unsigned char)c * FONT_HEIGHT];
 
-    for (size_t row = 0; row < font_height; row++)
+    for (size_t row = 0; row < FONT_HEIGHT; row++)
     {
-        for (size_t col = 0; col < 8; col++)
+        for (size_t col = 0; col < FONT_WIDTH; col++)
         {
             if (c == ' ' || !(glyph[row] & (1 << (7- col))))
             {

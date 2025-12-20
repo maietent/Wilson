@@ -6,6 +6,7 @@
 #include "printf.h"
 #include "gdt.h"
 #include "idt.h"
+#include "umain.h"
 
 void kmain(void)
 {
@@ -16,7 +17,7 @@ void kmain(void)
     if (!init_framebuffer())
         CU_halt();
 
-    uint32_t *fb = get_fb();
+    /*uint32_t *fb = get_fb();
     size_t fb_width = get_fb_width();
     size_t fb_height = get_fb_height();
     size_t fb_pitch = get_fb_pitch();
@@ -29,7 +30,9 @@ void kmain(void)
 
     char buf[256];
     snprintf(buf, sizeof(buf), "FB Resolution: %dx%d, is_debug: %d", fb_width, fb_height, is_debug);
-    draw_string(fb, fb_pitch, 1, 1, buf, 0xFFFFFF);
+    draw_string(fb, fb_pitch, 1, 1, buf, 0xFFFFFF);*/
+
+    umain();
 
     CU_halt();
 }
