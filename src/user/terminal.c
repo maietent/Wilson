@@ -27,6 +27,28 @@ void t_clear()
     t_reset_cursor();
 }
 
+void t_scroll()
+{
+    for (size_t y = 0; y < (TERMINAL_HEIGHT - 1) * FONT_HEIGHT; y++)
+    {
+        for (size_t x = 0; x < t_fb_width; x++)
+        {
+            t_fb[y * t_fb_pitch + x] = t_fb[(y + FONT_HEIGHT) * t_fb_pitch + x];
+        }
+    }
+
+    for (size_t y = (TERMINAL_HEIGHT - 1) * FONT_HEIGHT; y < t_fb_height; y++)
+    {
+        for (size_t x = 0; x < t_fb_width; x++)
+        {
+            t_fb[y * t_fb_pitch + x] = 0x000000;
+        }
+    }
+
+    if (t_cursor_y > 0)
+        t_cursor_y--;
+}
+
 void t_set_color(uint32_t color)
 {
     t_color = color;
@@ -36,7 +58,9 @@ void t_newline()
 {
     t_cursor_x = 0;
     t_cursor_y++;
-    // todo: scroll
+
+    if (t_cursor_y >= TERMINAL_HEIGHT)
+        t_scroll();
 }
 
 void t_putchar(char c)
