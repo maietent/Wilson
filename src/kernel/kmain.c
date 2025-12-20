@@ -5,11 +5,13 @@
 #include "font.h"
 #include "printf.h"
 #include "gdt.h"
+#include "idt.h"
 
 void kmain(void)
 {
     limine_init();
     gdt_init();
+    idt_init();
 
     if(!init_framebuffer())
         CU_halt();
