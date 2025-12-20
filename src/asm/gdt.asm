@@ -6,7 +6,7 @@ bits 64
 gdt_load:
     lgdt [rel gdt_descriptor]
 
-    mov ax, 0x10
+    mov eax, 0x10
     mov ds, ax
     mov es, ax
     mov fs, ax
