@@ -1,4 +1,5 @@
 #include "framebuffer.h"
+#include "alloc.h"
 
 uint32_t *fb_ptr = 0;
 size_t width = 0;
