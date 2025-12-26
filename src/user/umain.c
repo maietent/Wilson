@@ -3,14 +3,22 @@
 #include "terminal.h"
 #include "alloc.h"
 #include "cpu_utils.h"
+#include "klog.h"
 
 void umain(void)
 {
+    klogf("Entered umain\n");
+
     init_terminal();
+    klogf("Terminal initialized\n");
+
+    klog_set_terminal(t_printf);
+    klogf("Terminal selected for klog\n");
+
     t_drawstring("test\ntest\n");
     t_printf("printf test, res: %dx%d\n", get_fb_width(), get_fb_height());
     t_scroll();
-    t_set_color(0xFFFF00);
+    t_set_color(0xFF00FF);
     t_printf("scrolled! and color!\n");
     t_set_color(0xFFFFFF);
     t_printf("we shall test kmalloc...\n");
@@ -27,6 +35,8 @@ void umain(void)
     for (int i = 0; i < 4; i++) {
         buf[i] = i * 10;
     }
+
+    klogf("kernel log\n");
 
     t_printf("readback: ");
     for (int i = 0; i < 4; i++) {

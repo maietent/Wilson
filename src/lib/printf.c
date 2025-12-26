@@ -123,7 +123,7 @@ typedef void (*out_fct_type)(char character, void* buffer, size_t idx, size_t ma
 
 void _putchar(char character)
 {
-
+    (void)character; // shut the fuck up compiler
 }
 
 // wrapper (used as buffer) for output function type
