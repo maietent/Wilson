@@ -12,7 +12,7 @@ void umain(void)
     init_terminal();
     klogf("Terminal initialized\n");
 
-    klog_set_terminal(t_printf);
+    klog_set_terminal(t_printf, t_set_color);
     klogf("Terminal selected for klog\n");
 
     t_drawstring("test\ntest\n");

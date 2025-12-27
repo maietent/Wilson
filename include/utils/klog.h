@@ -4,7 +4,7 @@
 
 #define KLOG_BUFFER_SIZE 4096
 
-void klog_set_terminal(void (*t_printf)(const char* fmt, ...));
+void klog_set_terminal(void (*t_printf)(const char* fmt, ...), void (*t_set_color)(uint32_t color));
 
 void klogf(const char* fmt, ...);
 
