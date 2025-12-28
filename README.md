@@ -10,3 +10,8 @@ then provide a sort of API for the game to interact with the engine?
 
 so, this time i wanted to make the kernel provide an interface for stuff like idt drivers,  
 the framebuffer, etc, then make the actual "os" utilise that to make a shell for example.
+
+building:  
+
+get x86_64-elf-gcc  
+run "make run-debug or make run-debug"
