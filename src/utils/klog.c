@@ -7,14 +7,18 @@ static size_t klog_index = 0;
 static void (*terminal_printf)(const char* fmt, ...) = NULL;
 static void (*terminal_set_color)(uint32_t color) = NULL;
 
-static void klog_append(const char* str, size_t len) {
-    for (size_t i = 0; i < len; i++) {
+static void klog_append(const char* str, size_t len)
+{
+    for (size_t i = 0; i < len; i++)
+    {
         klog_buffer[klog_index] = str[i];
         klog_index = (klog_index + 1) % KLOG_BUFFER_SIZE;
     }
 }
 
-void klog_set_terminal(void (*t_printf)(const char* fmt, ...), void (*t_set_color)(uint32_t color)) {
+void klog_set_terminal(void (*t_printf)(const char* fmt, ...),
+    void (*t_set_color)(uint32_t color))
+{
     terminal_printf = t_printf;
     terminal_set_color = t_set_color;
 
@@ -25,7 +29,8 @@ void klog_set_terminal(void (*t_printf)(const char* fmt, ...), void (*t_set_colo
     const char* buf = klog_buffer;
 
     size_t i = 0;
-    while (i < size) {
+    while (i < size)
+    {
         size_t line_start = i;
         while (i < size && buf[i] != '\n')
             i++;
@@ -37,7 +42,8 @@ void klog_set_terminal(void (*t_printf)(const char* fmt, ...), void (*t_set_colo
         size_t prefix_len = sizeof(prefix) - 1;
 
         if (line_len >= prefix_len &&
-            strncmp(line, prefix, prefix_len) == 0) {
+            strncmp(line, prefix, prefix_len) == 0)
+        {
 
             terminal_set_color(0x00FFFF);
             terminal_printf("%.*s", (int)prefix_len, line);
@@ -47,12 +53,15 @@ void klog_set_terminal(void (*t_printf)(const char* fmt, ...), void (*t_set_colo
                 (int)(line_len - prefix_len),
                 line + prefix_len
             );
-        } else {
+        }
+        else
+        {
             terminal_set_color(0xCCCCCC);
             terminal_printf("%.*s", (int)line_len, line);
         }
 
-        if (i < size && buf[i] == '\n') {
+        if (i < size && buf[i] == '\n')
+        {
             terminal_printf("\n");
             i++;
         }
@@ -60,7 +69,8 @@ void klog_set_terminal(void (*t_printf)(const char* fmt, ...), void (*t_set_colo
     terminal_set_color(0xFFFFFF);
 }
 
-void klogf(const char* fmt, ...) {
+void klogf(const char* fmt, ...)
+{
     char temp[512];
 
     va_list args;
@@ -91,10 +101,12 @@ void klogf(const char* fmt, ...) {
     }
 }
 
-const char* klog_get_buffer(void) {
+const char* klog_get_buffer(void)
+{
     return klog_buffer;
 }
 
-size_t klog_get_size(void) {
+size_t klog_get_size(void)
+{
     return klog_index < KLOG_BUFFER_SIZE ? klog_index : KLOG_BUFFER_SIZE;
 }

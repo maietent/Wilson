@@ -9,6 +9,8 @@ void umain(void)
 {
     klogf("Entered umain\n");
 
+    klogf("Framebuffer resolution: %dx%d\n", get_fb_width(), get_fb_height());
+
     init_terminal();
     klogf("Terminal initialized\n");
 
