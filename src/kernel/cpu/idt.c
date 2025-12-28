@@ -49,11 +49,11 @@ void idt_init(void)
     idt_descriptor.limit = sizeof(idt) - 1;
     idt_descriptor.base = (uint64_t)&idt;
 
-    for (int i = 0; i < 256; i++) {
+    for (int i = 0; i < 256; i++)
+    {
         idt_set_entry(i, 0, 0, 0);
     }
 
     pic_remap();
-
     idt_load();
 }

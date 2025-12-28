@@ -7,6 +7,7 @@
 #include "alloc.h"
 #include "sse.h"
 #include "klog.h"
+#include "keyboard.h"
 #include "umain.h"
 
 void kmain(void)
@@ -26,8 +27,14 @@ void kmain(void)
     idt_init();
     klogf("IDT initialized\n");
 
+    keyboard_init();
+    klogf("Keyboard initialized\n");
+
     enable_sse();
     klogf("SSE initialized\n");
+
+    asm volatile ("sti");
+    klogf("Interrupts enabled\n");
 
     uintptr_t heap_base = find_usable_mem(1024 * 1024);
     if (!heap_base)

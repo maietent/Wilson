@@ -4,5 +4,6 @@
 void CU_halt(void)
 {
     klogf("CPU halted\n");
-    asm volatile("hlt");
+    for (;;)
+        asm volatile("hlt");
 }
