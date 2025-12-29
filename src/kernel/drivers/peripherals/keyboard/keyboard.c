@@ -29,11 +29,6 @@ void keyboard_handler_c(void)
     outb(0x20, INTERRUPT_ACK);
 }
 
-char keyboard_getchar(void)
-{
-    // todo
-}
-
 void keyboard_init(void)
 {
     idt_set_entry(IDT_PS2_KEYBOARD, (uint64_t)keyboard_handler_stub, 0x08, 0x8E);

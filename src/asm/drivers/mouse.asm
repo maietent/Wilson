@@ -1,10 +1,10 @@
-global keyboard_handler_stub
-extern keyboard_handler_c
+global mouse_handler_stub
+extern mouse_handler_c
 
 section .text
 bits 64
 
-keyboard_handler_stub:
+mouse_handler_stub:
     cld
     push r15
     push r14
@@ -22,7 +22,7 @@ keyboard_handler_stub:
     push rbx
     push rax
 
-    call keyboard_handler_c
+    call mouse_handler_c
 
     pop rax
     pop rbx

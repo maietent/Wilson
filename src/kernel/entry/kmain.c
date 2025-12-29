@@ -7,7 +7,7 @@
 #include "alloc.h"
 #include "sse.h"
 #include "klog.h"
-#include "keyboard.h"
+#include "driver.h"
 #include "umain.h"
 
 void kmain(void)
@@ -27,8 +27,8 @@ void kmain(void)
     idt_init();
     klogf("IDT initialized\n");
 
-    keyboard_init();
-    klogf("Keyboard initialized\n");
+    load_drivers();
+    klogf("Drivers initialized\n");
 
     enable_sse();
     klogf("SSE initialized\n");
