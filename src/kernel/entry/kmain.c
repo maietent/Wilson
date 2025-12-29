@@ -27,8 +27,8 @@ void kmain(void)
     idt_init();
     klogf("IDT initialized\n");
 
-    load_drivers();
-    klogf("Drivers initialized\n");
+    //load_drivers();
+    //klogf("Drivers initialized\n");
 
     enable_sse();
     klogf("SSE initialized\n");
