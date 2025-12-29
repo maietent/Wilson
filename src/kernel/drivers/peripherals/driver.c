@@ -5,5 +5,5 @@
 void load_drivers(void)
 {
     mouse_init();
-    keyboard_init();
+    //keyboard_init();
 }
