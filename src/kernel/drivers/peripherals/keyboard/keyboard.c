@@ -26,7 +26,6 @@ void keyboard_handler_c(void)
 
         char key_char = scancode_to_char[scancode];
         s_handle_keyboard(key_char, scancode);
-        //klogf("Key char: %c\n", key_char);
     }
     outb(0x20, INTERRUPT_ACK);
 }

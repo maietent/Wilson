@@ -9,3 +9,4 @@ char* strcat(char* dest, const char* src);
 char* strchr(const char* str, int c);
 char* strtok(char* str, const char* delimiters);
 int strncmp(const char* str1, const char* str2, size_t n);
+char* strncpy(char* dest, const char* src, size_t n);

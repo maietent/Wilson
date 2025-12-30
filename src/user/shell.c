@@ -65,6 +65,24 @@ void s_draw_prompt(void)
     t_printf("\n> ");
 }
 
+void s_command_handler()
+{
+    if (strcmp(cmd_buf, "help") == 0) {
+        t_printf("\nCommands:\necho\nhelp\n");
+    }
+    else if (strncmp(cmd_buf, "echo", 4) == 0) {
+        char tmp[512] = {0};
+        if (strlen(cmd_buf) > 5) {
+            strncpy(tmp, cmd_buf + 5, 512 - 1);
+        }
+
+        t_printf("\n%s\n", tmp);
+    }
+    else {
+        t_printf("\nUnknown command: %s\n", cmd_buf);
+    }
+}
+
 void s_handle_enter()
 {
     if (!cmd_len)
@@ -73,7 +91,8 @@ void s_handle_enter()
         return;
     }
 
-    t_printf("\nYour command: %s\n", cmd_buf);
+    s_command_handler();
+    //t_printf("\nYour command: %s\n", cmd_buf);
 
     s_draw_prompt();
     cmd_len = 0;
