@@ -41,13 +41,13 @@ all: release
 # compile C files
 bin/%.o: src/%.c
 	@mkdir -p $(dir $@)
-	@echo "🔨 Compiling $<..."
+	@echo "Compiling $<..."
 	@$(CC) $(CFLAGS) $(INCLUDES) $(EXTRA_CFLAGS) -c $< -o $@ 2>&1 | \
 		while IFS= read -r line; do \
 			if echo "$$line" | grep -qi "error:"; then \
-				echo "❌ $$line"; \
+				echo "$$line"; \
 			elif echo "$$line" | grep -qi "warning:"; then \
-				echo "⚠️  $$line"; \
+				echo "$$line"; \
 			else \
 				echo "$$line"; \
 			fi; \
@@ -57,13 +57,13 @@ bin/%.o: src/%.c
 # compile assembly files with nasm
 bin/%.o: src/%.asm
 	@mkdir -p $(dir $@)
-	@echo "⚙️  Assembling $<..."
+	@echo "Assembling $<..."
 	@$(AS) -f elf64 -o $@ $< 2>&1 | \
 		while IFS= read -r line; do \
 			if echo "$$line" | grep -qi "error:"; then \
-				echo "❌ $$line"; \
+				echo "$$line"; \
 			elif echo "$$line" | grep -qi "warning:"; then \
-				echo "⚠️  $$line"; \
+				echo "$$line"; \
 			else \
 				echo "$$line"; \
 			fi; \
@@ -72,37 +72,37 @@ bin/%.o: src/%.asm
 
 # link kernel
 bin/kernel.elf: $(KERNEL_OBJ)
-	@echo "🔗 Linking kernel..."
+	@echo "Linking kernel..."
 	@mkdir -p bin
 	@$(LD) $(LDFLAGS) -o $@ $^ 2>&1 | \
 		while IFS= read -r line; do \
 			if echo "$$line" | grep -qi "error:"; then \
-				echo "❌ $$line"; \
+				echo "$$line"; \
 			elif echo "$$line" | grep -qi "warning:"; then \
-				echo "⚠️  $$line"; \
+				echo "$$line"; \
 			else \
 				echo "$$line"; \
 			fi; \
 		done; \
 		exit $${PIPESTATUS[0]}
-	@echo "✅ Kernel linked successfully"
+	@echo "Kernel linked successfully"
 
 # fetch limine
 limine/limine:
 	@if [ ! -d "limine" ]; then \
-		echo "📦 Fetching limine bootloader..."; \
+		echo "Fetching limine bootloader..."; \
 		git clone https://github.com/limine-bootloader/limine.git --branch=v8.x-binary --depth=1 > /dev/null 2>&1; \
-		echo "🔧 Building limine..."; \
+		echo "Building limine..."; \
 		$(MAKE) -C limine > /dev/null 2>&1; \
-		echo "✅ Limine ready"; \
+		echo "Limine ready"; \
 	else \
-		echo "✅ Limine already present"; \
+		echo "Limine already present"; \
 	fi
 
 # build ISO
 isobuilds/WilsonD.iso: EXTRA_CFLAGS := -DDEBUG_BUILD
 isobuilds/WilsonD.iso: bin/kernel.elf limine/limine
-	@echo "📀 Building debug ISO..."
+	@echo "Building debug ISO..."
 	@rm -rf isodirs
 	@mkdir -p isodirs/boot/limine
 	@cp bin/kernel.elf isodirs/boot/
@@ -116,10 +116,10 @@ isobuilds/WilsonD.iso: bin/kernel.elf limine/limine
 		--protective-msdos-label isodirs -o isobuilds/WilsonD.iso > /dev/null 2>&1
 	@./limine/limine bios-install isobuilds/WilsonD.iso > /dev/null 2>&1
 	@rm -rf isodirs
-	@echo "✅ Debug ISO created: isobuilds/WilsonD.iso"
+	@echo "Debug ISO created: isobuilds/WilsonD.iso"
 
 isobuilds/Wilson.iso: bin/kernel.elf limine/limine
-	@echo "📀 Building release ISO..."
+	@echo "Building release ISO..."
 	@rm -rf isodirs
 	@mkdir -p isodirs/boot/limine
 	@cp bin/kernel.elf isodirs/boot/
@@ -133,18 +133,18 @@ isobuilds/Wilson.iso: bin/kernel.elf limine/limine
 		--protective-msdos-label isodirs -o isobuilds/Wilson.iso > /dev/null 2>&1
 	@./limine/limine bios-install isobuilds/Wilson.iso > /dev/null 2>&1
 	@rm -rf isodirs
-	@echo "✅ Release ISO created: isobuilds/Wilson.iso"
+	@echo "Release ISO created: isobuilds/Wilson.iso"
 
 # cleanup
 clean:
-	@echo "🧹 Cleaning all build artifacts..."
+	@echo "Cleaning all build artifacts..."
 	@rm -rf bin $(KERNEL_OBJ) isobuilds/*.iso limine isodirs mnt_boot mnt_root
-	@echo "✅ Clean complete"
+	@echo "Clean complete"
 
 clean_no_iso:
-	@echo "🧹 Cleaning build artifacts (keeping ISOs)..."
+	@echo "Cleaning build artifacts (keeping ISOs)..."
 	@rm -rf bin $(KERNEL_OBJ) limine isodirs mnt_boot mnt_root
-	@echo "✅ Clean complete"
+	@echo "Clean complete"
 
 # separate build targets
 debug: isobuilds/WilsonD.iso
@@ -152,9 +152,9 @@ release: isobuilds/Wilson.iso
 
 # run in qemu with ISO
 run-debug: debug
-	@echo "🚀 Launching QEMU..."
+	@echo "Launching QEMU..."
 	@qemu-system-x86_64 -M q35 -cdrom isobuilds/WilsonD.iso $(QEMUFLAGS)
 
 run-release: release
-	@echo "🚀 Launching QEMU..."
+	@echo "Launching QEMU..."
 	@qemu-system-x86_64 -M q35 -cdrom isobuilds/Wilson.iso $(QEMUFLAGS)

@@ -155,11 +155,12 @@ void shell_run(void)
 {
     t_clear();
     t_draw_header(
-        "Wilson",
+        "Wilson - v0.1",
         0xFFFFFF,
-        0x0000DD);
+        0x0000EE);
 
-    s_draw_prompt();
+    //s_draw_prompt();
+    t_printf("> ");
 
     CU_halt();
 }

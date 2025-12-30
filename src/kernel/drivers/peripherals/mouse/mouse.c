@@ -3,6 +3,7 @@
 #include "ports.h"
 #include "klog.h"
 #include "shell.h"
+#include "framebuffer.h"
 
 #define IDT_PS2_MOUSE 44
 #define MOUSE_PORT 0x60
@@ -14,10 +15,13 @@
 
 #define MOUSE_WRITE  0xD4
 
+#define CURSOR_WIDTH 32
+#define CURSOR_HEIGHT 32
+
 static uint8_t mouse_cycle = 0;
 static uint8_t mouse_bytes[3];
-static int32_t cursor_x = 0;
-static int32_t cursor_y = 0;
+static int cursor_x = 0;
+static int cursor_y = 0;
 
 extern void mouse_handler_stub(void);
 
@@ -99,14 +103,19 @@ void mouse_handler_c(void)
             cursor_x += dx;
             cursor_y -= dy;
 
+            int fb_width = get_fb_width();
+            int fb_height = get_fb_height();
+
             if (cursor_x < 0) cursor_x = 0;
             if (cursor_y < 0) cursor_y = 0;
-            if (cursor_x > 1024) cursor_x = 1024;
-            if (cursor_y > 768) cursor_y = 768;
+            if (cursor_x > fb_width - (CURSOR_WIDTH - 16)) cursor_x = fb_width - ((CURSOR_WIDTH / 2) - 4);
+            if (cursor_y > fb_height - CURSOR_HEIGHT) cursor_y = fb_height - CURSOR_HEIGHT;
 
             if (dx || dy)
+            {
                 s_handle_mouse(cursor_x, cursor_y);
                 //klogf("Cursor: X=%d Y=%d\n", cursor_x, cursor_y);
+            }
 
             break;
         }
