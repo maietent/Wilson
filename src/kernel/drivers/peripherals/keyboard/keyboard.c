@@ -10,23 +10,35 @@
 #define KEYBOARD_CMD_PORT 0x64
 #define INTERRUPT_ACK 0x20
 
+bool shift_pressed = false;
+
 extern void keyboard_handler_stub();
 
 void keyboard_handler_c(void)
 {
-    if (inb(KEYBOARD_CMD_PORT) & 0X01)
+    if (!(inb(KEYBOARD_CMD_PORT) & 0x01))
     {
-        uint8_t scancode = inb(KEYBOARD_PORT);
+        outb(0x20, INTERRUPT_ACK);
+        return;
+    }
 
-        if (scancode & 0x80)
-        {
-            outb(0x20, INTERRUPT_ACK);
-            return;
-        }
+    uint8_t scancode = inb(KEYBOARD_PORT);
+    bool released = scancode & 0x80;
+    uint8_t key = scancode & 0x7F;
 
-        char key_char = scancode_to_char[scancode];
+    if (key == 0x2A || key == 0x36)
+    {
+        shift_pressed = !released;
+        outb(0x20, INTERRUPT_ACK);
+        return;
+    }
+
+    if (!released)
+    {
+        char key_char = shift_pressed ? scancode_to_char_shift[key] : scancode_to_char[key];
         s_handle_keyboard(key_char, scancode);
     }
+
     outb(0x20, INTERRUPT_ACK);
 }
 
