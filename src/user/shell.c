@@ -219,7 +219,7 @@ void shell_run(void)
 
     memset(terminal_buffer, 0, buffer_size * sizeof(uint32_t));
 
-    memset(desktop_buffer, 0x00202020, buffer_size * sizeof(uint32_t));
+    memset(desktop_buffer, 0x000000, buffer_size * sizeof(uint32_t));
 
     t_clear();
     t_draw_header(
