@@ -2,6 +2,7 @@
 #include "idt.h"
 #include "ports.h"
 #include "klog.h"
+#include "shell.h"
 
 #define IDT_PS2_MOUSE 44
 #define MOUSE_PORT 0x60
@@ -104,7 +105,8 @@ void mouse_handler_c(void)
             if (cursor_y > 768) cursor_y = 768;
 
             if (dx || dy)
-                klogf("Cursor: X=%d Y=%d\n", cursor_x, cursor_y);
+                s_handle_mouse(cursor_x, cursor_y);
+                //klogf("Cursor: X=%d Y=%d\n", cursor_x, cursor_y);
 
             break;
         }

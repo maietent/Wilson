@@ -3,6 +3,7 @@
 #include "ports.h"
 #include "scancodes.h"
 #include "klog.h"
+#include "shell.h"
 
 #define IDT_PS2_KEYBOARD 33
 #define KEYBOARD_PORT 0x60
@@ -24,7 +25,8 @@ void keyboard_handler_c(void)
         }
 
         char key_char = scancode_to_char[scancode];
-        klogf("Key char: %c\n", key_char);
+        s_handle_keyboard(key_char, scancode);
+        //klogf("Key char: %c\n", key_char);
     }
     outb(0x20, INTERRUPT_ACK);
 }

@@ -4,8 +4,7 @@
 #include "alloc.h"
 #include "cpu_utils.h"
 #include "klog.h"
-#include "keyboard.h"
-#include "mouse.h"
+#include "shell.h"
 
 void umain(void)
 {
@@ -18,6 +17,8 @@ void umain(void)
 
     klog_set_terminal(t_printf, t_set_color);
     klogf("Terminal selected for klog\n");
+
+    shell_run();
 
     CU_halt();
 }
