@@ -108,8 +108,8 @@ void mouse_handler_c(void)
 
             if (cursor_x < 0) cursor_x = 0;
             if (cursor_y < 0) cursor_y = 0;
-            if (cursor_x > fb_width - (CURSOR_WIDTH - 16)) cursor_x = fb_width - ((CURSOR_WIDTH / 2) - 4);
-            if (cursor_y > fb_height - CURSOR_HEIGHT) cursor_y = fb_height - CURSOR_HEIGHT;
+            if (cursor_x > fb_width - CURSOR_WIDTH) cursor_x = fb_width - (CURSOR_WIDTH - 19);
+            if (cursor_y > fb_height - CURSOR_HEIGHT) cursor_y = fb_height - (CURSOR_HEIGHT - 11);
 
             if (dx || dy)
             {
