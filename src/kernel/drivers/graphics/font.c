@@ -2,7 +2,8 @@
 #include "fontarrays.h"
 #include "framebuffer.h"
 
-void draw_char(uint32_t *fb, size_t pitch, size_t x, size_t y, char c, uint32_t color)
+void draw_char(uint32_t *fb, size_t pitch,
+    size_t x, size_t y, char c, uint32_t color)
 {
     if ((unsigned char)c > 127)
         return;

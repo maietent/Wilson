@@ -156,8 +156,8 @@ void shell_run(void)
     t_clear();
     t_draw_header(
         "Wilson - v0.1",
-        0xFFFFFF,
-        0x0000EE);
+        0x000000,
+        0xFFFFFF);
 
     //s_draw_prompt();
     t_printf("> ");
