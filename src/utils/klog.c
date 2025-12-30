@@ -140,7 +140,8 @@ void klogf(const char* fmt, ...)
 
     klog_append(prefixed, prefixed_len);
 
-    if (terminal_printf && terminal_set_color) {
+    if (terminal_printf && terminal_set_color)
+    {
         terminal_set_color(0x00FFFF);
         terminal_printf("[KLog] ");
 
