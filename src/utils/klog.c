@@ -22,7 +22,7 @@ void klog_set_terminal(void (*t_printf)(const char* fmt, ...),
     terminal_printf = t_printf;
     terminal_set_color = t_set_color;
 
-    if (!terminal_printf || !terminal_set_color)
+    /*if (!terminal_printf || !terminal_set_color)
         return;
 
     size_t size = klog_get_size();
@@ -66,6 +66,55 @@ void klog_set_terminal(void (*t_printf)(const char* fmt, ...),
             i++;
         }
     }
+    terminal_set_color(0xFFFFFF);*/
+}
+
+void klog_flush(void)
+{
+    if (!terminal_printf || !terminal_set_color)
+        return;
+
+    size_t size = klog_get_size();
+    const char* buf = klog_buffer;
+
+    size_t i = 0;
+    while (i < size)
+    {
+        size_t line_start = i;
+        while (i < size && buf[i] != '\n')
+            i++;
+        size_t line_len = i - line_start;
+
+        const char* line = &buf[line_start];
+
+        const char prefix[] = "[KLog] ";
+        size_t prefix_len = sizeof(prefix) - 1;
+
+        if (line_len >= prefix_len &&
+            strncmp(line, prefix, prefix_len) == 0)
+        {
+            terminal_set_color(0x00FFFF);
+            terminal_printf("%.*s", (int)prefix_len, line);
+
+            terminal_set_color(0xCCCCCC);
+            terminal_printf("%.*s",
+                (int)(line_len - prefix_len),
+                line + prefix_len
+            );
+        }
+        else
+        {
+            terminal_set_color(0xCCCCCC);
+            terminal_printf("%.*s", (int)line_len, line);
+        }
+
+        if (i < size && buf[i] == '\n')
+        {
+            terminal_printf("\n");
+            i++;
+        }
+    }
+
     terminal_set_color(0xFFFFFF);
 }
 

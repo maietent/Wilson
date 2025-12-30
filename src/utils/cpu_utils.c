@@ -3,7 +3,7 @@
 
 void CU_halt(void)
 {
-    klogf("CPU halted\n");
+    //klogf("CPU halted\n");
     for (;;)
         asm volatile("hlt");
 }

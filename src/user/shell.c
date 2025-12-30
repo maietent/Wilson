@@ -68,7 +68,7 @@ void s_draw_prompt(void)
 void s_command_handler()
 {
     if (strcmp(cmd_buf, "help") == 0) {
-        t_printf("\nCommands:\necho\nhelp\n");
+        t_printf("\nCommands:\necho\nhelp\nklog\n");
     }
     else if (strncmp(cmd_buf, "echo", 4) == 0) {
         char tmp[512] = {0};
@@ -77,6 +77,10 @@ void s_command_handler()
         }
 
         t_printf("\n%s\n", tmp);
+    }
+    else if (strcmp(cmd_buf, "klog") == 0) {
+        t_printf("\n");
+        klog_flush();
     }
     else {
         t_printf("\nUnknown command: %s\n", cmd_buf);
