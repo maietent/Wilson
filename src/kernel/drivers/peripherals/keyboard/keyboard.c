@@ -11,8 +11,6 @@
 
 extern void keyboard_handler_stub();
 
-static keyboard_handler_fn user_keyboard_handler = NULL;
-
 void keyboard_handler_c(void)
 {
     if (inb(KEYBOARD_CMD_PORT) & 0X01)
@@ -26,17 +24,12 @@ void keyboard_handler_c(void)
         }
 
         char key_char = scancode_to_char[scancode];
-
-        if (user_keyboard_handler != NULL)
-        {
-            user_keyboard_handler(key_char, scancode);
-        }
+        klogf("Key char: %c\n", key_char);
     }
     outb(0x20, INTERRUPT_ACK);
 }
 
-void keyboard_init(keyboard_handler_fn handler)
+void keyboard_init()
 {
-    user_keyboard_handler = handler;
     idt_set_entry(IDT_PS2_KEYBOARD, (uint64_t)keyboard_handler_stub, 0x08, 0x8E);
 }
