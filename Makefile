@@ -153,8 +153,8 @@ release: isobuilds/Wilson.iso
 # run in qemu with ISO
 run-debug: debug
 	@echo "Launching QEMU..."
-	@qemu-system-x86_64 -M q35 -cdrom isobuilds/WilsonD.iso $(QEMUFLAGS)
+	@qemu-system-x86_64 -serial stdio -M q35 -cdrom isobuilds/WilsonD.iso $(QEMUFLAGS)
 
 run-release: release
 	@echo "Launching QEMU..."
-	@qemu-system-x86_64 -M q35 -cdrom isobuilds/Wilson.iso $(QEMUFLAGS)
+	@qemu-system-x86_64 -serial stdio -M q35 -cdrom isobuilds/Wilson.iso $(QEMUFLAGS)
