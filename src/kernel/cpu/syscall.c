@@ -6,16 +6,23 @@
 
 extern void syscall_handler_stub();
 
+void _syscall_print(uint64_t rbx)
+{
+    klogf("%c", (char)rbx);
+}
+
 void syscall_handler_c(uint64_t rax, uint64_t rbx, uint64_t rcx)
 {
+    (void)rcx; //warning
+
     klogf("syscall called\n");
     switch (rax)
     {
         case 1:
-            klogf("%c", (char)rbx);
+            _syscall_print(rbx);
             break;
         default:
-            klogf("default syscall\n");
+            klogf("Unknown syscall called, rax: %d\n", rax);
             break;
     }
 }
