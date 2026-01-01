@@ -8,6 +8,7 @@
 #include "memory.h"
 #include "font.h"
 #include "alloc.h"
+#include "syscall.h"
 
 static uint32_t cursor_backing[CURSOR_WIDTH * CURSOR_HEIGHT];
 static bool cursor_visible = false;
@@ -121,6 +122,20 @@ void s_command_handler()
     {
         t_printf("\n");
         klog_flush();
+    }
+    else if (strcmp(cmd_buf, "sleep") == 0)
+    {
+        t_printf("\n");
+        for (int i = 0; i < 5; i++) {
+            klogf("Tick %d\n", i);
+            sleep_ms(1000);
+        }
+    }
+    else if (strcmp(cmd_buf, "syscallc") == 0)
+    {
+        t_printf("\n");
+        syscall_print('a');
+        t_printf("\n");
     }
     else
     {
