@@ -6,6 +6,7 @@ void d_switch_to_desktop(void);
 void d_switch_to_terminal(void);
 void d_switch_buffer(int wanted_buf);
 void d_handle_mouse(int cursor_x, int cursor_y);
+void d_handle_keyboard(char key_char, uint8_t scancode);
 void d_draw_cursor(uint32_t *fb, size_t pitch, int x, int y);
 void d_restore_cursor(uint32_t *fb, size_t pitch);
 

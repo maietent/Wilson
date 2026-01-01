@@ -4,7 +4,7 @@
 #include "font.h"
 #include "alloc.h"
 #include "cursor.h"
-#include <string.h>
+#include "string.h"
 
 static uint32_t cursor_backing[CURSOR_WIDTH * CURSOR_HEIGHT];
 static bool cursor_visible = false;
@@ -74,4 +74,9 @@ void d_handle_mouse(int cursor_x, int cursor_y)
 
     d_restore_cursor(fb, pitch);
     d_draw_cursor(fb, pitch, cursor_x, cursor_y);
+}
+
+void d_handle_keyboard(char key_char, uint8_t scancode)
+{
+
 }

@@ -40,7 +40,7 @@ void s_handle_keyboard(char key_char, uint8_t scancode)
 
     if (current_mode)
     {
-
+        d_handle_keyboard(key_char, scancode);
     }
     else
     {

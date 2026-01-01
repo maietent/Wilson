@@ -15,7 +15,7 @@ void syscall_handler_c(uint64_t rax, uint64_t rbx, uint64_t rcx)
 {
     (void)rcx; //warning
 
-    klogf("syscall called\n");
+    //klogf("syscall called\n");
     switch (rax)
     {
         case 1:
