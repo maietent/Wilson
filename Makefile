@@ -1,3 +1,5 @@
+# this makefile is vibecoded!!!!!!!!!!!!!!!!!!1
+
 # nuke built-in rules and variables
 MAKEFLAGS += -rR
 .SUFFIXES:
