@@ -1,5 +1,3 @@
-# vibecoded make file i think im a vibecoder now because i vibecoded a makefile help me
-
 # nuke built-in rules and variables
 MAKEFLAGS += -rR
 .SUFFIXES:
@@ -14,21 +12,28 @@ AR := x86_64-elf-ar
 QEMUFLAGS := -m 512M
 IMAGE_NAME := Wilson
 
-# compiler and linker flags
-CFLAGS := -m64 -mcmodel=kernel -ffreestanding -fno-stack-protector -fno-stack-check -nostdlib -O2 -g -Wall -Wextra
+# compiler and linker flags (base flags)
+CFLAGS_BASE := -m64 -mcmodel=kernel -ffreestanding -fno-stack-protector -fno-stack-check -nostdlib -O2 -Wall -Wextra
+CFLAGS_DEBUG := $(CFLAGS_BASE) -g -DDEBUG_BUILD
+CFLAGS_RELEASE := $(CFLAGS_BASE) -g
+
 LDFLAGS := -T linker.ld -nostdlib -static
 
 # source and asm files
 KERNEL_SRC := $(shell find src -type f -name "*.c")
 KERNEL_ASM := $(shell find src -type f -name "*.asm")
-KERNEL_OBJ := $(patsubst src/%, bin/%, $(KERNEL_SRC:.c=.o) $(KERNEL_ASM:.asm=.o))
+KERNEL_HDR := $(shell find include -type f -name "*.h")
+
+# object files (separate for debug and release)
+KERNEL_OBJ_DEBUG := $(patsubst src/%, bin/debug/%, $(KERNEL_SRC:.c=.o) $(KERNEL_ASM:.asm=.o))
+KERNEL_OBJ_RELEASE := $(patsubst src/%, bin/release/%, $(KERNEL_SRC:.c=.o) $(KERNEL_ASM:.asm=.o))
 
 # include dirs
 INCLUDE_DIRS := $(shell find include -type d)
 INCLUDES := $(foreach dir, $(INCLUDE_DIRS), -I$(dir))
 
 # ensure bin and isobuilds directories
-$(shell mkdir -p bin isobuilds)
+$(shell mkdir -p bin/debug bin/release isobuilds)
 
 # silent mode by default
 .SILENT:
@@ -38,54 +43,103 @@ $(shell mkdir -p bin isobuilds)
 # default target
 all: release
 
-# compile C files
-bin/%.o: src/%.c
+# compile C files for DEBUG
+bin/debug/%.o: src/%.c $(KERNEL_HDR)
 	@mkdir -p $(dir $@)
-	@echo "Compiling $<..."
-	@$(CC) $(CFLAGS) $(INCLUDES) $(EXTRA_CFLAGS) -c $< -o $@ 2>&1 | \
-		while IFS= read -r line; do \
-			if echo "$$line" | grep -qi "error:"; then \
-				echo "$$line"; \
-			elif echo "$$line" | grep -qi "warning:"; then \
-				echo "$$line"; \
-			else \
-				echo "$$line"; \
-			fi; \
-		done; \
-		exit $${PIPESTATUS[0]}
+	@echo "Compiling (debug) $<..."
+	@$(CC) $(CFLAGS_DEBUG) $(INCLUDES) -c $< -o $@ 2>&1 | \
+	while IFS= read -r line; do \
+		if echo "$$line" | grep -qi "error:"; then \
+			echo "$$line"; \
+		elif echo "$$line" | grep -qi "warning:"; then \
+			echo "$$line"; \
+		else \
+			echo "$$line"; \
+		fi; \
+	done; \
+	exit $${PIPESTATUS[0]}
 
-# compile assembly files with nasm
-bin/%.o: src/%.asm
+# compile C files for RELEASE
+bin/release/%.o: src/%.c $(KERNEL_HDR)
 	@mkdir -p $(dir $@)
-	@echo "Assembling $<..."
+	@echo "Compiling (release) $<..."
+	@$(CC) $(CFLAGS_RELEASE) $(INCLUDES) -c $< -o $@ 2>&1 | \
+	while IFS= read -r line; do \
+		if echo "$$line" | grep -qi "error:"; then \
+			echo "$$line"; \
+		elif echo "$$line" | grep -qi "warning:"; then \
+			echo "$$line"; \
+		else \
+			echo "$$line"; \
+		fi; \
+	done; \
+	exit $${PIPESTATUS[0]}
+
+# compile assembly files for DEBUG
+bin/debug/%.o: src/%.asm
+	@mkdir -p $(dir $@)
+	@echo "Assembling (debug) $<..."
 	@$(AS) -f elf64 -o $@ $< 2>&1 | \
-		while IFS= read -r line; do \
-			if echo "$$line" | grep -qi "error:"; then \
-				echo "$$line"; \
-			elif echo "$$line" | grep -qi "warning:"; then \
-				echo "$$line"; \
-			else \
-				echo "$$line"; \
-			fi; \
-		done; \
-		exit $${PIPESTATUS[0]}
+	while IFS= read -r line; do \
+		if echo "$$line" | grep -qi "error:"; then \
+			echo "$$line"; \
+		elif echo "$$line" | grep -qi "warning:"; then \
+			echo "$$line"; \
+		else \
+			echo "$$line"; \
+		fi; \
+	done; \
+	exit $${PIPESTATUS[0]}
 
-# link kernel
-bin/kernel.elf: $(KERNEL_OBJ)
-	@echo "Linking kernel..."
-	@mkdir -p bin
+# compile assembly files for RELEASE
+bin/release/%.o: src/%.asm
+	@mkdir -p $(dir $@)
+	@echo "Assembling (release) $<..."
+	@$(AS) -f elf64 -o $@ $< 2>&1 | \
+	while IFS= read -r line; do \
+		if echo "$$line" | grep -qi "error:"; then \
+			echo "$$line"; \
+		elif echo "$$line" | grep -qi "warning:"; then \
+			echo "$$line"; \
+		else \
+			echo "$$line"; \
+		fi; \
+	done; \
+	exit $${PIPESTATUS[0]}
+
+# link kernel (DEBUG)
+bin/debug/kernel.elf: $(KERNEL_OBJ_DEBUG)
+	@echo "Linking debug kernel..."
+	@mkdir -p bin/debug
 	@$(LD) $(LDFLAGS) -o $@ $^ 2>&1 | \
-		while IFS= read -r line; do \
-			if echo "$$line" | grep -qi "error:"; then \
-				echo "$$line"; \
-			elif echo "$$line" | grep -qi "warning:"; then \
-				echo "$$line"; \
-			else \
-				echo "$$line"; \
-			fi; \
-		done; \
-		exit $${PIPESTATUS[0]}
-	@echo "Kernel linked successfully"
+	while IFS= read -r line; do \
+		if echo "$$line" | grep -qi "error:"; then \
+			echo "$$line"; \
+		elif echo "$$line" | grep -qi "warning:"; then \
+			echo "$$line"; \
+		else \
+			echo "$$line"; \
+		fi; \
+	done; \
+	exit $${PIPESTATUS[0]}
+	@echo "Debug kernel linked successfully"
+
+# link kernel (RELEASE)
+bin/release/kernel.elf: $(KERNEL_OBJ_RELEASE)
+	@echo "Linking release kernel..."
+	@mkdir -p bin/release
+	@$(LD) $(LDFLAGS) -o $@ $^ 2>&1 | \
+	while IFS= read -r line; do \
+		if echo "$$line" | grep -qi "error:"; then \
+			echo "$$line"; \
+		elif echo "$$line" | grep -qi "warning:"; then \
+			echo "$$line"; \
+		else \
+			echo "$$line"; \
+		fi; \
+	done; \
+	exit $${PIPESTATUS[0]}
+	@echo "Release kernel linked successfully"
 
 # fetch limine
 limine/limine:
@@ -99,13 +153,12 @@ limine/limine:
 		echo "Limine already present"; \
 	fi
 
-# build ISO
-isobuilds/WilsonD.iso: EXTRA_CFLAGS := -DDEBUG_BUILD
-isobuilds/WilsonD.iso: bin/kernel.elf limine/limine
+# build DEBUG ISO
+isobuilds/WilsonD.iso: bin/debug/kernel.elf limine/limine
 	@echo "Building debug ISO..."
 	@rm -rf isodirs
 	@mkdir -p isodirs/boot/limine
-	@cp bin/kernel.elf isodirs/boot/
+	@cp bin/debug/kernel.elf isodirs/boot/kernel.elf
 	@cp limine.conf isodirs/boot/limine/
 	@cp limine/limine-bios.sys limine/limine-bios-cd.bin limine/limine-uefi-cd.bin isodirs/boot/limine/
 	@mkdir -p isodirs/EFI/BOOT
@@ -118,11 +171,12 @@ isobuilds/WilsonD.iso: bin/kernel.elf limine/limine
 	@rm -rf isodirs
 	@echo "Debug ISO created: isobuilds/WilsonD.iso"
 
-isobuilds/Wilson.iso: bin/kernel.elf limine/limine
+# build RELEASE ISO
+isobuilds/Wilson.iso: bin/release/kernel.elf limine/limine
 	@echo "Building release ISO..."
 	@rm -rf isodirs
 	@mkdir -p isodirs/boot/limine
-	@cp bin/kernel.elf isodirs/boot/
+	@cp bin/release/kernel.elf isodirs/boot/kernel.elf
 	@cp limine.conf isodirs/boot/limine/
 	@cp limine/limine-bios.sys limine/limine-bios-cd.bin limine/limine-uefi-cd.bin isodirs/boot/limine/
 	@mkdir -p isodirs/EFI/BOOT
@@ -138,16 +192,17 @@ isobuilds/Wilson.iso: bin/kernel.elf limine/limine
 # cleanup
 clean:
 	@echo "Cleaning all build artifacts..."
-	@rm -rf bin $(KERNEL_OBJ) isobuilds/*.iso limine isodirs mnt_boot mnt_root
+	@rm -rf bin $(KERNEL_OBJ_DEBUG) $(KERNEL_OBJ_RELEASE) isobuilds/*.iso limine isodirs mnt_boot mnt_root
 	@echo "Clean complete"
 
 clean_no_iso:
 	@echo "Cleaning build artifacts (keeping ISOs)..."
-	@rm -rf bin $(KERNEL_OBJ) limine isodirs mnt_boot mnt_root
+	@rm -rf bin $(KERNEL_OBJ_DEBUG) $(KERNEL_OBJ_RELEASE) limine isodirs mnt_boot mnt_root
 	@echo "Clean complete"
 
 # separate build targets
 debug: isobuilds/WilsonD.iso
+
 release: isobuilds/Wilson.iso
 
 # run in qemu with ISO
