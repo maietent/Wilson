@@ -14,7 +14,7 @@ the framebuffer, etc, then make the actual "os" utilise that to make a shell for
 building:  
 
 get x86_64-elf-gcc  
-run "make run-debug or make run-release"
+run "make qemu-disk-debug or make qemu-disk-release"
 
 credits:
 https://github.com/mpaland/printf

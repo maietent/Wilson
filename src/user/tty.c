@@ -84,7 +84,6 @@ void t_cmd_ata_read(void)
         return;
     }
 
-    // parse arguments
     char* arg1 = strtok(t_command_args, " ");
     char* arg2 = strtok(NULL, "");
 
