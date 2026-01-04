@@ -81,14 +81,6 @@ void register_exception_handlers() {
     idt_set_entry(31, (uint64_t)isr31, 0x08, 0x8E);
 }
 
-void dummy_handler(int irq) {
-    klogf("IRQ %d received.\n", irq);
-    outb(0x20, 0x20);
-    if (irq >= 8) {
-        outb(0xA0, 0x20);
-    }
-}
-
 void idt_init(void)
 {
     idt_descriptor.limit = sizeof(idt) - 1;
