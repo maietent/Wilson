@@ -11,5 +11,5 @@ void CU_halt(void)
 
 void sleep_ms(uint64_t ms)
 {
-    pit_wait(ms);
+    pit_sleep_ms(ms);
 }

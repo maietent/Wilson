@@ -2,39 +2,49 @@
 #include "idt.h"
 #include "ports.h"
 
-#define PIT_CHANNEL_0 0x40
-#define PIT_CMD 0x43
-#define IDT_PIT_TIMER 32
-
-#define PIT_BASE_FREQ 1193182
-
-static volatile uint64_t ticks = 0;
+#define PIT_CHANNEL0 0x40
+#define PIT_COMMAND  0x43
+#define PIT_BASE_FREQ 1193182ULL
+#define PIT_IRQ 0
+#define INTERRUPT_ACK 0x20
 
 extern void pit_handler_stub(void);
 
-void pit_handler_c(void) {
-    ticks++;
-    outb(0x20, 0x20);
+static volatile uint64_t pit_ticks = 0;
+static uint32_t pit_frequency = 100;
+
+void pit_handler_c(void)
+{
+    pit_ticks++;
+
+    outb(0x20, INTERRUPT_ACK);
 }
 
-void pit_init(uint32_t frequency) {
-    uint32_t divisor = PIT_BASE_FREQ / frequency;
+void pit_init(uint32_t frequency)
+{
+    if (frequency == 0) return;
 
-    outb(PIT_CMD, 0x36);
+    pit_frequency = frequency;
 
-    outb(PIT_CHANNEL_0, divisor & 0xFF);
-    outb(PIT_CHANNEL_0, (divisor >> 8) & 0xFF);
+    uint16_t divisor = (uint16_t)(PIT_BASE_FREQ / frequency);
 
-    idt_set_entry(IDT_PIT_TIMER, (uint64_t)pit_handler_stub, 0x08, 0x8E);
+    outb(PIT_COMMAND, 0x36);
+    outb(PIT_CHANNEL0, divisor & 0xFF);
+    outb(PIT_CHANNEL0, (divisor >> 8) & 0xFF);
+
+    idt_set_entry(32 + PIT_IRQ, (uint64_t)pit_handler_stub, 0x08, 0x8E);
 }
 
-uint64_t pit_get_ticks(void) {
-    return ticks;
+uint64_t pit_get_ticks(void)
+{
+    return pit_ticks;
 }
 
-void pit_wait(uint32_t wait_ticks) {
-    uint64_t target = ticks + wait_ticks;
-    while (ticks < target) {
-        asm volatile("hlt");
+void pit_sleep_ms(uint64_t ms)
+{
+    uint64_t start = pit_ticks;
+    uint64_t wait_ticks = (pit_frequency * ms) / 1000;
+    while ((pit_ticks - start) < wait_ticks) {
+        __asm__ volatile("" ::: "memory");
     }
 }

@@ -38,6 +38,7 @@ void t_cmd_reboot(void);
 void t_cmd_rng(void);
 void t_cmd_info(void);
 void t_cmd_sleep(void);
+void t_cmd_getticks(void);
 void t_cmd_klog(void);
 void t_cmd_syscallc(void);
 void t_cmd_ata_read(void);

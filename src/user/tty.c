@@ -8,6 +8,7 @@
 #include "keyboard.h"
 #include "ata.h"
 #include "stdio.h"
+#include "pit.h"
 
 char t_cmd_buf[TTY_CMD_BUF_SIZE];
 size_t t_cmd_len = 0;
@@ -23,6 +24,7 @@ t_command_t t_commands[] = {
     { "echo", "Print text to the terminal", t_cmd_echo },
     { "clear", "Clear the terminal", t_cmd_clear },
     { "reboot", "Reboot the system", t_cmd_reboot },
+    { "getticks", "Get the current PIT ticks", t_cmd_getticks },
     { "sleep", "Sleep for 5 seconds", t_cmd_sleep },
     { "klog", "Print kernel log", t_cmd_klog },
     { "syscallc", "Test syscall", t_cmd_syscallc },
@@ -54,6 +56,13 @@ void t_cmd_reboot(void)
 {
     t_printf("Rebooting system\n");
     asm volatile("cli\nmovb $0xFE, %al\noutb %al, $0x64\nhlt\n");
+}
+
+void t_cmd_getticks(void)
+{
+    t_printf("\n");
+    t_printf("%d", pit_get_ticks());
+    t_printf("\n");
 }
 
 void t_cmd_sleep(void)

@@ -1,9 +1,11 @@
 #include "driver.h"
 #include "keyboard.h"
 #include "mouse.h"
-#include "pit.h"
 #include "syscall.h"
 #include "ata.h"
+#include "pit.h"
+#include "ports.h"
+#include "klog.h"
 
 void load_drivers(void)
 {
