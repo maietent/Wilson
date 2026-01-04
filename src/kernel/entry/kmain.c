@@ -36,12 +36,12 @@ void kmain(void)
     asm volatile ("sti");
     klogf("Interrupts enabled\n");
 
-    uintptr_t heap_base = find_usable_mem(1024 * 1024);
+    uintptr_t heap_base = find_usable_mem(HEAP_SIZE);
     if (!heap_base)
         CU_halt();
 
-    init_heap(heap_base + get_hhdm());
-    klogf("Heap initialized\n");
+    init_heap(heap_base + get_hhdm(), HEAP_SIZE);
+    klogf("Heap initialized, size: %d\n", HEAP_SIZE);
 
     if (!init_framebuffer())
         CU_halt();

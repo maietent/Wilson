@@ -1,6 +1,7 @@
 #include "idt.h"
 #include "ports.h"
 #include "exception.h"
+#include "klog.h"
 
 #define IDT_FLAG_PRESENT 0x80
 #define IDT_FLAG_RING0   0x00
@@ -37,7 +38,7 @@ void pic_remap()
     outb(0xA1, 0x01);
 
     outb(0x21, 0x00);
-    outb(0xA1, 0xEF);
+    outb(0xA1, 0x00);
 }
 
 bool idt_is_set(int num)
@@ -78,6 +79,14 @@ void register_exception_handlers() {
     idt_set_entry(29, (uint64_t)isr29, 0x08, 0x8E);
     idt_set_entry(30, (uint64_t)isr30, 0x08, 0x8E);
     idt_set_entry(31, (uint64_t)isr31, 0x08, 0x8E);
+}
+
+void dummy_handler(int irq) {
+    klogf("IRQ %d received.\n", irq);
+    outb(0x20, 0x20);
+    if (irq >= 8) {
+        outb(0xA0, 0x20);
+    }
 }
 
 void idt_init(void)

@@ -3,6 +3,7 @@
 #include "mouse.h"
 #include "pit.h"
 #include "syscall.h"
+#include "ata.h"
 
 void load_drivers(void)
 {
@@ -10,4 +11,5 @@ void load_drivers(void)
     mouse_init();
     keyboard_init();
     pit_init(1000);
+    ata_init();
 }

@@ -69,18 +69,23 @@ void klog_flush(void)
 {
     if (!terminal_printf || !terminal_set_color)
         return;
+
     size_t size = klog_get_size();
     const char* buf = klog_buffer;
+
     size_t i = 0;
     while (i < size)
     {
         size_t line_start = i;
+
         while (i < size && buf[i] != '\n')
             i++;
+
         size_t line_len = i - line_start;
         const char* line = &buf[line_start];
         const char prefix[] = "[KLog] ";
         size_t prefix_len = sizeof(prefix) - 1;
+
         if (line_len >= prefix_len &&
             strncmp(line, prefix, prefix_len) == 0)
         {
@@ -103,25 +108,33 @@ void klog_flush(void)
             i++;
         }
     }
+
     terminal_set_color(0xFFFFFF);
 }
 
 void klogf(const char* fmt, ...)
 {
     char temp[512];
+
     va_list args;
     va_start(args, fmt);
     int len = vsnprintf(temp, sizeof(temp), fmt, args);
     va_end(args);
+
     if (len <= 0)
         return;
+
     if ((size_t)len > sizeof(temp))
         len = sizeof(temp);
+
     char prefixed[512];
+
     int prefixed_len = snprintf(prefixed, sizeof(prefixed), "[KLog] %.*s", len, temp);
     if ((size_t)prefixed_len > sizeof(prefixed))
         prefixed_len = sizeof(prefixed);
+
     klog_append(prefixed, prefixed_len);
+
     if (terminal_printf && terminal_set_color)
     {
         terminal_set_color(0x00FFFF);

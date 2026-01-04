@@ -25,3 +25,19 @@ void itoa(int value, char* buffer, int base) {
     }
     buffer[j] = '\0';
 }
+
+uint32_t kstrtoul(const char* str)
+{
+    uint32_t result = 0;
+    if (!str) return 0;
+
+    while (*str) {
+        char c = *str++;
+        if (c >= '0' && c <= '9') {
+            result = result * 10 + (c - '0');
+        } else {
+            break;
+        }
+    }
+    return result;
+}

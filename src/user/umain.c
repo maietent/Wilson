@@ -18,6 +18,7 @@ void umain(void)
     klog_set_terminal(t_printf, t_set_color);
     klogf("Terminal selected for klog\n");
 
+    klogf("Running shell\n");
     shell_run();
 
     CU_halt();

@@ -34,120 +34,81 @@ KERNEL_OBJ_RELEASE := $(patsubst src/%, bin/release/%, $(KERNEL_SRC:.c=.o) $(KER
 INCLUDE_DIRS := $(shell find include -type d)
 INCLUDES := $(foreach dir, $(INCLUDE_DIRS), -I$(dir))
 
-# ensure bin and isobuilds directories
-$(shell mkdir -p bin/debug bin/release isobuilds)
+# disk image paths
+DISK_DEBUG := builds/img/disk-debug.img
+DISK_RELEASE := builds/img/disk-release.img
+DISK_SIZE_MB := 96
+
+# ensure bin and builds directories
+$(shell mkdir -p bin/debug bin/release bin/limine builds/isos builds/img)
 
 # silent mode by default
 .SILENT:
 
-.PHONY: all run-debug run-release debug release clean clean_no_iso qemu-debug qemu-release
+.PHONY: all run-debug run-release debug release clean clean_no_iso qemu-disk-debug qemu-disk-release debug-complete release-complete
 
-# default target
-all: release
+# default target - builds debug complete, then release complete
+all: debug-complete release-complete
 
-# compile C files for DEBUG
+# debug-complete builds debug kernel, then both debug iso and img
+debug-complete: bin/debug/kernel.elf
+	@$(MAKE) builds/isos/WilsonD.iso
+	@$(MAKE) $(DISK_DEBUG)
+
+# release-complete builds release kernel, then both release iso and img
+release-complete: bin/release/kernel.elf
+	@$(MAKE) builds/isos/Wilson.iso
+	@$(MAKE) $(DISK_RELEASE)
+
+# ------------------------
+# Compile rules
+# ------------------------
+
 bin/debug/%.o: src/%.c $(KERNEL_HDR)
 	@mkdir -p $(dir $@)
 	@echo "Compiling (debug) $<..."
-	@$(CC) $(CFLAGS_DEBUG) $(INCLUDES) -c $< -o $@ 2>&1 | \
-	while IFS= read -r line; do \
-		if echo "$$line" | grep -qi "error:"; then \
-			echo "$$line"; \
-		elif echo "$$line" | grep -qi "warning:"; then \
-			echo "$$line"; \
-		else \
-			echo "$$line"; \
-		fi; \
-	done; \
-	exit $${PIPESTATUS[0]}
+	@$(CC) $(CFLAGS_DEBUG) $(INCLUDES) -c $< -o $@
 
-# compile C files for RELEASE
 bin/release/%.o: src/%.c $(KERNEL_HDR)
 	@mkdir -p $(dir $@)
 	@echo "Compiling (release) $<..."
-	@$(CC) $(CFLAGS_RELEASE) $(INCLUDES) -c $< -o $@ 2>&1 | \
-	while IFS= read -r line; do \
-		if echo "$$line" | grep -qi "error:"; then \
-			echo "$$line"; \
-		elif echo "$$line" | grep -qi "warning:"; then \
-			echo "$$line"; \
-		else \
-			echo "$$line"; \
-		fi; \
-	done; \
-	exit $${PIPESTATUS[0]}
+	@$(CC) $(CFLAGS_RELEASE) $(INCLUDES) -c $< -o $@
 
-# compile assembly files for DEBUG
 bin/debug/%.o: src/%.asm
 	@mkdir -p $(dir $@)
 	@echo "Assembling (debug) $<..."
-	@$(AS) -f elf64 -o $@ $< 2>&1 | \
-	while IFS= read -r line; do \
-		if echo "$$line" | grep -qi "error:"; then \
-			echo "$$line"; \
-		elif echo "$$line" | grep -qi "warning:"; then \
-			echo "$$line"; \
-		else \
-			echo "$$line"; \
-		fi; \
-	done; \
-	exit $${PIPESTATUS[0]}
+	@$(AS) -f elf64 -o $@ $<
 
-# compile assembly files for RELEASE
 bin/release/%.o: src/%.asm
 	@mkdir -p $(dir $@)
 	@echo "Assembling (release) $<..."
-	@$(AS) -f elf64 -o $@ $< 2>&1 | \
-	while IFS= read -r line; do \
-		if echo "$$line" | grep -qi "error:"; then \
-			echo "$$line"; \
-		elif echo "$$line" | grep -qi "warning:"; then \
-			echo "$$line"; \
-		else \
-			echo "$$line"; \
-		fi; \
-	done; \
-	exit $${PIPESTATUS[0]}
+	@$(AS) -f elf64 -o $@ $<
 
-# link kernel (DEBUG)
+# ------------------------
+# Link kernel
+# ------------------------
+
 bin/debug/kernel.elf: $(KERNEL_OBJ_DEBUG)
 	@echo "Linking debug kernel..."
 	@mkdir -p bin/debug
-	@$(LD) $(LDFLAGS) -o $@ $^ 2>&1 | \
-	while IFS= read -r line; do \
-		if echo "$$line" | grep -qi "error:"; then \
-			echo "$$line"; \
-		elif echo "$$line" | grep -qi "warning:"; then \
-			echo "$$line"; \
-		else \
-			echo "$$line"; \
-		fi; \
-	done; \
-	exit $${PIPESTATUS[0]}
+	@$(LD) $(LDFLAGS) -o $@ $^
 	@echo "Debug kernel linked successfully"
 
-# link kernel (RELEASE)
 bin/release/kernel.elf: $(KERNEL_OBJ_RELEASE)
 	@echo "Linking release kernel..."
 	@mkdir -p bin/release
-	@$(LD) $(LDFLAGS) -o $@ $^ 2>&1 | \
-	while IFS= read -r line; do \
-		if echo "$$line" | grep -qi "error:"; then \
-			echo "$$line"; \
-		elif echo "$$line" | grep -qi "warning:"; then \
-			echo "$$line"; \
-		else \
-			echo "$$line"; \
-		fi; \
-	done; \
-	exit $${PIPESTATUS[0]}
+	@$(LD) $(LDFLAGS) -o $@ $^
 	@echo "Release kernel linked successfully"
 
-# fetch limine
-limine/limine:
-	@if [ ! -d "limine" ]; then \
+# ------------------------
+# Limine bootloader
+# ------------------------
+
+bin/limine/limine:
+	@if [ ! -f "bin/limine/limine" ]; then \
 		echo "Fetching limine bootloader..."; \
-		git clone https://github.com/limine-bootloader/limine.git --branch=v8.x-binary --depth=1 > /dev/null 2>&1; \
+		mkdir -p bin; \
+		cd bin && git clone https://github.com/limine-bootloader/limine.git --branch=v8.x-binary --depth=1 > /dev/null 2>&1; \
 		echo "Building limine..."; \
 		$(MAKE) -C limine > /dev/null 2>&1; \
 		echo "Limine ready"; \
@@ -155,63 +116,135 @@ limine/limine:
 		echo "Limine already present"; \
 	fi
 
-# build DEBUG ISO
-isobuilds/WilsonD.iso: bin/debug/kernel.elf limine/limine
+# ------------------------
+# ISO build rules
+# ------------------------
+
+builds/isos/WilsonD.iso: bin/debug/kernel.elf bin/limine/limine
 	@echo "Building debug ISO..."
-	@rm -rf isodirs
-	@mkdir -p isodirs/boot/limine
-	@cp bin/debug/kernel.elf isodirs/boot/kernel.elf
-	@cp limine.conf isodirs/boot/limine/
-	@cp limine/limine-bios.sys limine/limine-bios-cd.bin limine/limine-uefi-cd.bin isodirs/boot/limine/
-	@mkdir -p isodirs/EFI/BOOT
-	@cp limine/BOOTX64.EFI isodirs/EFI/BOOT/
+	@rm -rf bin/wilsonfs
+	@mkdir -p bin/wilsonfs/boot/limine
+	@cp bin/debug/kernel.elf bin/wilsonfs/boot/kernel.elf
+	@cp limine.conf bin/wilsonfs/boot/limine/
+	@cp bin/limine/limine-bios.sys bin/limine/limine-bios-cd.bin bin/limine/limine-uefi-cd.bin bin/wilsonfs/boot/limine/
+	@mkdir -p bin/wilsonfs/EFI/BOOT
+	@cp bin/limine/BOOTX64.EFI bin/wilsonfs/EFI/BOOT/
+	@mkdir -p bin/wilsonfs/root
+	@echo "test" > bin/wilsonfs/root/test.txt
 	@xorriso -as mkisofs -R -J -b boot/limine/limine-bios-cd.bin -no-emul-boot \
 		-boot-load-size 4 -boot-info-table -hfsplus -apm-block-size 2048 \
 		--efi-boot boot/limine/limine-uefi-cd.bin -efi-boot-part --efi-boot-image \
-		--protective-msdos-label isodirs -o isobuilds/WilsonD.iso > /dev/null 2>&1
-	@./limine/limine bios-install isobuilds/WilsonD.iso > /dev/null 2>&1
-	@rm -rf isodirs
-	@echo "Debug ISO created: isobuilds/WilsonD.iso"
+		--protective-msdos-label bin/wilsonfs -o builds/isos/WilsonD.iso 2>&1 | grep -v "NOTE"
+	@./bin/limine/limine bios-install builds/isos/WilsonD.iso 2>/dev/null
+	@rm -rf bin/wilsonfs
+	@echo "Debug ISO created: builds/isos/WilsonD.iso"
 
-# build RELEASE ISO
-isobuilds/Wilson.iso: bin/release/kernel.elf limine/limine
+builds/isos/Wilson.iso: bin/release/kernel.elf bin/limine/limine
 	@echo "Building release ISO..."
-	@rm -rf isodirs
-	@mkdir -p isodirs/boot/limine
-	@cp bin/release/kernel.elf isodirs/boot/kernel.elf
-	@cp limine.conf isodirs/boot/limine/
-	@cp limine/limine-bios.sys limine/limine-bios-cd.bin limine/limine-uefi-cd.bin isodirs/boot/limine/
-	@mkdir -p isodirs/EFI/BOOT
-	@cp limine/BOOTX64.EFI isodirs/EFI/BOOT/
+	@rm -rf bin/wilsonfs
+	@mkdir -p bin/wilsonfs/boot/limine
+	@cp bin/release/kernel.elf bin/wilsonfs/boot/kernel.elf
+	@cp limine.conf bin/wilsonfs/boot/limine/
+	@cp bin/limine/limine-bios.sys bin/limine/limine-bios-cd.bin bin/limine/limine-uefi-cd.bin bin/wilsonfs/boot/limine/
+	@mkdir -p bin/wilsonfs/EFI/BOOT
+	@cp bin/limine/BOOTX64.EFI bin/wilsonfs/EFI/BOOT/
+	@mkdir -p bin/wilsonfs/root
+	@echo "test" > bin/wilsonfs/root/test.txt
 	@xorriso -as mkisofs -R -J -b boot/limine/limine-bios-cd.bin -no-emul-boot \
 		-boot-load-size 4 -boot-info-table -hfsplus -apm-block-size 2048 \
 		--efi-boot boot/limine/limine-uefi-cd.bin -efi-boot-part --efi-boot-image \
-		--protective-msdos-label isodirs -o isobuilds/Wilson.iso > /dev/null 2>&1
-	@./limine/limine bios-install isobuilds/Wilson.iso > /dev/null 2>&1
-	@rm -rf isodirs
-	@echo "Release ISO created: isobuilds/Wilson.iso"
+		--protective-msdos-label bin/wilsonfs -o builds/isos/Wilson.iso 2>&1 | grep -v "NOTE"
+	@./bin/limine/limine bios-install builds/isos/Wilson.iso 2>/dev/null
+	@rm -rf bin/wilsonfs
+	@echo "Release ISO created: builds/isos/Wilson.iso"
 
-# cleanup
+# ------------------------
+# Raw disk images (with proper partition)
+# ------------------------
+
+$(DISK_DEBUG): bin/debug/kernel.elf bin/limine/limine
+	@echo "Creating debug disk image..."
+	@mkdir -p builds/img
+	@rm -f $(DISK_DEBUG)
+	@dd if=/dev/zero of=$(DISK_DEBUG) bs=1M count=$(DISK_SIZE_MB) 2>/dev/null
+	@parted -s $(DISK_DEBUG) mklabel msdos 2>/dev/null
+	@parted -s $(DISK_DEBUG) mkpart primary fat32 1MiB 100% 2>/dev/null
+	@parted -s $(DISK_DEBUG) set 1 boot on 2>/dev/null
+	@LOOPDEV=$$(sudo losetup --show -f -P $(DISK_DEBUG)); \
+	PART=$${LOOPDEV}p1; \
+	sudo mkfs.fat -F 32 $$PART > /dev/null 2>&1; \
+	sudo mkdir -p tmp_mnt; \
+	sudo mount $$PART tmp_mnt; \
+	sudo mkdir -p tmp_mnt/boot/limine; \
+	sudo cp bin/debug/kernel.elf tmp_mnt/boot/kernel.elf; \
+	sudo cp bin/limine/limine-bios.sys bin/limine/limine-bios-cd.bin bin/limine/limine-uefi-cd.bin tmp_mnt/boot/limine/; \
+	sudo cp bin/limine/limine-bios.sys tmp_mnt/; \
+	sudo cp limine.conf tmp_mnt/boot/limine/limine.conf; \
+	echo "test" | sudo tee tmp_mnt/test.txt > /dev/null; \
+	sudo umount tmp_mnt; \
+	sudo losetup -d $$LOOPDEV; \
+	rm -rf tmp_mnt
+	@./bin/limine/limine bios-install $(DISK_DEBUG) 2>/dev/null
+	@echo "Debug disk image created: $(DISK_DEBUG)"
+
+$(DISK_RELEASE): bin/release/kernel.elf bin/limine/limine
+	@echo "Creating release disk image..."
+	@mkdir -p builds/img
+	@rm -f $(DISK_RELEASE)
+	@dd if=/dev/zero of=$(DISK_RELEASE) bs=1M count=$(DISK_SIZE_MB) 2>/dev/null
+	@parted -s $(DISK_RELEASE) mklabel msdos 2>/dev/null
+	@parted -s $(DISK_RELEASE) mkpart primary fat32 1MiB 100% 2>/dev/null
+	@parted -s $(DISK_RELEASE) set 1 boot on 2>/dev/null
+	@LOOPDEV=$$(sudo losetup --show -f -P $(DISK_RELEASE)); \
+	PART=$${LOOPDEV}p1; \
+	sudo mkfs.fat -F 32 $$PART > /dev/null 2>&1; \
+	sudo mkdir -p tmp_mnt; \
+	sudo mount $$PART tmp_mnt; \
+	sudo mkdir -p tmp_mnt/boot/limine; \
+	sudo cp bin/release/kernel.elf tmp_mnt/boot/kernel.elf; \
+	sudo cp bin/limine/limine-bios.sys bin/limine/limine-bios-cd.bin bin/limine/limine-uefi-cd.bin tmp_mnt/boot/limine/; \
+	sudo cp bin/limine/limine-bios.sys tmp_mnt/; \
+	sudo cp limine.conf tmp_mnt/boot/limine/limine.conf; \
+	echo "test" | sudo tee tmp_mnt/test.txt > /dev/null; \
+	sudo umount tmp_mnt; \
+	sudo losetup -d $$LOOPDEV; \
+	rm -rf tmp_mnt
+	@./bin/limine/limine bios-install $(DISK_RELEASE) 2>/dev/null
+	@echo "Release disk image created: $(DISK_RELEASE)"
+
+# ------------------------
+# Clean
+# ------------------------
+
 clean:
 	@echo "Cleaning all build artifacts..."
-	@rm -rf bin $(KERNEL_OBJ_DEBUG) $(KERNEL_OBJ_RELEASE) isobuilds/*.iso limine isodirs mnt_boot mnt_root
+	@rm -rf bin $(KERNEL_OBJ_DEBUG) $(KERNEL_OBJ_RELEASE) builds mnt_boot mnt_root
 	@echo "Clean complete"
 
 clean_no_iso:
 	@echo "Cleaning build artifacts (keeping ISOs)..."
-	@rm -rf bin $(KERNEL_OBJ_DEBUG) $(KERNEL_OBJ_RELEASE) limine isodirs mnt_boot mnt_root
+	@rm -rf bin $(KERNEL_OBJ_DEBUG) $(KERNEL_OBJ_RELEASE) mnt_boot mnt_root
 	@echo "Clean complete"
 
-# separate build targets
-debug: isobuilds/WilsonD.iso
+# ------------------------
+# Build targets
+# ------------------------
 
-release: isobuilds/Wilson.iso
+debug: builds/isos/WilsonD.iso
+release: builds/isos/Wilson.iso
 
-# run in qemu with ISO
 run-debug: debug
 	@echo "Launching QEMU..."
-	@qemu-system-x86_64 -serial stdio -M q35 -cdrom isobuilds/WilsonD.iso $(QEMUFLAGS)
+	@qemu-system-x86_64 -serial stdio -M q35 -cdrom builds/isos/WilsonD.iso $(QEMUFLAGS)
 
 run-release: release
 	@echo "Launching QEMU..."
-	@qemu-system-x86_64 -serial stdio -M q35 -cdrom isobuilds/Wilson.iso $(QEMUFLAGS)
+	@qemu-system-x86_64 -serial stdio -M q35 -cdrom builds/isos/Wilson.iso $(QEMUFLAGS)
+
+qemu-disk-debug: $(DISK_DEBUG)
+	@echo "Booting debug disk in QEMU..."
+	@qemu-system-x86_64 -serial stdio -hda $(DISK_DEBUG) $(QEMUFLAGS)
+
+qemu-disk-release: $(DISK_RELEASE)
+	@echo "Booting release disk in QEMU..."
+	@qemu-system-x86_64 -serial stdio -hda $(DISK_RELEASE) $(QEMUFLAGS)

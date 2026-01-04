@@ -5,7 +5,7 @@
 #include "alloc.h"
 #include "string.h"
 
-#define TERMINAL_RESERVED_ROWS 1
+#define TERMINAL_RESERVED_ROWS 0
 
 static uint32_t *t_fb;
 static size_t t_fb_pitch;
@@ -20,7 +20,7 @@ static size_t t_cursor_y = TERMINAL_RESERVED_ROWS;
 
 static uint32_t *t_cell_bg;
 
-static bool t_allow_reserved = false;
+static bool t_allow_reserved = true;
 
 #define TERMINAL_WIDTH  (t_fb_width / FONT_WIDTH)
 #define TERMINAL_HEIGHT (t_fb_height / FONT_HEIGHT)
@@ -242,5 +242,7 @@ bool init_terminal()
         return false;
 
     t_clear();
+
+    t_allow_reserved = true;
     return true;
 }

@@ -15,3 +15,6 @@ building:
 
 get x86_64-elf-gcc  
 run "make run-debug or make run-release"
+
+credits:
+https://github.com/mpaland/printf
