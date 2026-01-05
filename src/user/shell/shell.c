@@ -64,13 +64,14 @@ void shell_run(void)
     memset(terminal_buffer, 0, buffer_size * sizeof(uint32_t));
     memset(desktop_buffer, 0x000000, buffer_size * sizeof(uint32_t));
 
-    t_clear();
-    t_printf("===================================\n");
+    //t_clear();
+    t_printf("\n\n===================================\n");
     t_printf("=           Wilson v0.01          =\n");
     t_printf("=    F1 for TTY, F2 for Desktop   =\n");
     t_printf("=  \"help\" for a list of commands  =\n");
-    t_printf("===================================\n\n");
-    t_printf("$ ");
+    t_printf("===================================\n");
+    //t_printf("$ ");
+    t_draw_prompt();
 
     memcpy(terminal_buffer, limine_fb, buffer_size * sizeof(uint32_t));
     memcpy(limine_fb, desktop_buffer, buffer_size * sizeof(uint32_t));

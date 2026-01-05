@@ -1,6 +1,7 @@
 #include "font.h"
 #include "fontarrays.h"
 #include "framebuffer.h"
+#include "gohufont.h"
 
 void draw_char(uint32_t *fb, size_t pitch,
     size_t x, size_t y, char c, uint32_t color)
@@ -9,7 +10,7 @@ void draw_char(uint32_t *fb, size_t pitch,
         return;
 
     const uint8_t *glyph =
-        &AVGA2_8x14[(unsigned char)c * FONT_HEIGHT];
+        &gohufont_14[(unsigned char)c * FONT_HEIGHT];
 
     for (size_t row = 0; row < FONT_HEIGHT; row++)
     {
