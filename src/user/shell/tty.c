@@ -20,6 +20,9 @@ int t_history_index = -1;
 
 char* t_command_args = NULL;
 
+int cursor_tick = 0;
+bool show_cursor = true;
+
 t_command_t t_commands[] = {
     { "help", "List all available commands", t_cmd_help },
     { "echo", "Print text to the terminal", t_cmd_echo },
@@ -308,17 +311,12 @@ void t_handle_keyboard(char key_char, uint8_t scancode)
     if (scancode == 0x48) { t_history_up(); return; }
     if (scancode == 0x50) { t_history_down(); return; }
 
-    /* Ignore non-character keys (F1–F12, Ctrl, Alt, etc.) */
     if (key_char == 0)
         return;
 
     if (key_char == '\n')
     {
-        t_command_handler();
-        t_cmd_len = 0;
-        t_cmd_buf[0] = '\0';
-        t_history_index = -1;
-        t_draw_prompt();
+        t_handle_enter();
         return;
     }
 
@@ -347,6 +345,9 @@ void t_handle_backspace(void)
 
 void t_handle_enter(void)
 {
+    if (show_cursor)
+        t_putchar_at_coord(' ', get_cursor_x(), get_cursor_y());
+
     t_command_handler();
     t_cmd_len = 0;
     t_cmd_buf[0] = '\0';
@@ -354,7 +355,31 @@ void t_handle_enter(void)
     t_draw_prompt();
 }
 
+void t_toggle_cursor()
+{
+    show_cursor = !show_cursor;
+
+    if (show_cursor)
+        t_putchar_at_coord('_', get_cursor_x(), get_cursor_y());
+    else
+        t_putchar_at_coord(' ', get_cursor_x(), get_cursor_y());
+}
+
+static uint32_t old_pit_ticks = 0;
+
+void t_cursor_tick()
+{
+    uint32_t pit_ticks = pit_get_ticks();
+
+    if (pit_ticks - old_pit_ticks >= 250)
+    {
+        t_toggle_cursor();
+        old_pit_ticks = pit_ticks;
+        return;
+    }
+}
+
 void t_tick()
 {
-
+    t_cursor_tick();
 }

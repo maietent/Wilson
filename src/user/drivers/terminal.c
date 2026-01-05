@@ -26,6 +26,9 @@ static bool t_allow_reserved = true;
 #define TERMINAL_HEIGHT (t_fb_height / FONT_HEIGHT)
 #define CELL_INDEX(x, y) ((y) * TERMINAL_WIDTH + (x))
 
+int get_cursor_x() { return t_cursor_x; }
+int get_cursor_y() { return t_cursor_y; }
+
 static void draw_cell_bg(size_t cx, size_t cy, uint32_t color)
 {
     size_t px = cx * FONT_WIDTH;
@@ -182,6 +185,41 @@ void t_putchar(char c)
     t_cursor_x++;
     if (t_cursor_x >= TERMINAL_WIDTH)
         t_newline();
+}
+
+void t_putchar_at_coord(char c, int x, int y)
+{
+    if (c == '\n')
+    {
+        t_newline();
+        return;
+    }
+
+    if (c == '\b')
+    {
+        t_backspace();
+        return;
+    }
+
+    if (!t_allow_reserved && t_cursor_y < TERMINAL_RESERVED_ROWS)
+        t_cursor_y = TERMINAL_RESERVED_ROWS;
+
+    uint32_t bg = t_cell_bg[CELL_INDEX(t_cursor_x, t_cursor_y)];
+
+    draw_cell_bg(t_cursor_x, t_cursor_y, bg);
+
+    draw_char(
+        t_fb,
+        t_fb_pitch,
+        x * FONT_WIDTH,
+        y * FONT_HEIGHT,
+        c,
+        t_fg_color
+    );
+
+    //t_cursor_x++;
+    //if (t_cursor_x >= TERMINAL_WIDTH)
+        //t_newline();
 }
 
 void t_drawstring(const char* str)
