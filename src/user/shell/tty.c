@@ -400,8 +400,7 @@ void t_cursor_tick()
     if (pit_ticks - old_pit_ticks >= 250)
     {
         t_toggle_cursor();
-        old_pit_ticks = pit_ticks;
-        return;
+        old_pit_ticks += 250;
     }
 }
 
