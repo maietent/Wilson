@@ -48,3 +48,5 @@ void t_cmd_cat(void);
 void t_cmd_pwd(void);
 
 void t_tick();
+
+void t_init_tty();

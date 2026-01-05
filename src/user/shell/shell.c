@@ -51,6 +51,8 @@ void s_handle_mouse(int cursor_x, int cursor_y)
 
 void shell_run(void)
 {
+    t_init_tty();
+
     limine_fb = get_fb();
     size_t s_width = get_fb_width();
     size_t s_height = get_fb_height();

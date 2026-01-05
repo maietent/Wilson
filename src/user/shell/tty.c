@@ -23,6 +23,9 @@ char* t_command_args = NULL;
 int cursor_tick = 0;
 bool show_cursor = true;
 
+char t_username[256];
+char t_hostname[256];
+
 t_command_t t_commands[] = {
     { "help", "List all available commands", t_cmd_help },
     { "echo", "Print text to the terminal", t_cmd_echo },
@@ -257,7 +260,7 @@ int t_input_only_spaces(const char* input, size_t len)
 void t_draw_prompt(void)
 {
     const char* path = fat32_get_current_path();
-    t_printf("\n%s $ ", path);
+    t_printf("\n%s@%s %s $ ", t_username, t_hostname, path);
 }
 
 void t_history_up(void)
@@ -415,4 +418,51 @@ void t_cursor_tick()
 void t_tick()
 {
     t_cursor_tick();
+}
+
+void t_init_tty()
+{
+    fat32_file_t un_file;
+    fat32_open("/WILSON/USERS/USERS", &un_file);
+
+    uint32_t bytes_read_total = 0;
+    uint8_t buffer[64];
+    int result;
+    int done = 0;
+
+    while (!done && (result = fat32_read(&un_file, buffer, sizeof(buffer))) > 0)
+    {
+        for (int i = 0; i < result && bytes_read_total < sizeof(t_username) - 1; i++)
+        {
+            if (buffer[i] == '\n')
+            {
+                done = 1;
+                break;
+            }
+            t_username[bytes_read_total++] = buffer[i];
+        }
+    }
+    t_username[bytes_read_total] = '\0';
+    fat32_close(&un_file);
+
+    fat32_file_t mi_file;
+    fat32_open("/WILSON/HOSTNAME", &mi_file);
+
+    bytes_read_total = 0;
+    done = 0;
+
+    while (!done && (result = fat32_read(&mi_file, buffer, sizeof(buffer))) > 0)
+    {
+        for (int i = 0; i < result && bytes_read_total < sizeof(t_hostname) - 1; i++)
+        {
+            if (buffer[i] == '\n')
+            {
+                done = 1;
+                break;
+            }
+            t_hostname[bytes_read_total++] = buffer[i];
+        }
+    }
+    t_hostname[bytes_read_total] = '\0';
+    fat32_close(&mi_file);
 }
