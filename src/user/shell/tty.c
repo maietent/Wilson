@@ -36,6 +36,7 @@ t_command_t t_commands[] = {
     { "ls", "List files in current directory", t_cmd_ls },
     { "cd", "Change directory. Usage: cd <dirname>", t_cmd_cd },
     { "cat", "Display file contents. Usage: cat <filename>", t_cmd_cat },
+    { "pwd", "Print working directory", t_cmd_pwd },
 };
 
 size_t t_command_count = sizeof(t_commands) / sizeof(t_commands[0]);
@@ -177,6 +178,12 @@ void t_cmd_cd(void)
     }
 }
 
+void t_cmd_pwd(void)
+{
+    const char* path = fat32_get_current_path();
+    t_printf("%s\n", path);
+}
+
 void t_cmd_cat(void)
 {
     if (!t_command_args || !*t_command_args)
@@ -249,7 +256,8 @@ int t_input_only_spaces(const char* input, size_t len)
 
 void t_draw_prompt(void)
 {
-    t_printf("\n$ ");
+    const char* path = fat32_get_current_path();
+    t_printf("\n%s $ ", path);
 }
 
 void t_history_up(void)

@@ -69,6 +69,7 @@ typedef struct {
 } fat32_file_t;
 
 bool fat32_init(void);
+
 bool fat32_open(const char *path, fat32_file_t *file);
 bool fat32_create(const char *path, fat32_file_t *file);
 int  fat32_read(fat32_file_t *file, uint8_t *buffer, uint32_t size);
@@ -76,7 +77,10 @@ int  fat32_write(fat32_file_t *file, const uint8_t *buffer, uint32_t size);
 bool fat32_close(fat32_file_t *file);
 bool fat32_seek(fat32_file_t *file, uint32_t position);
 bool fat32_delete(const char *path);
+
 bool fat32_list_dir(const char *path, void (*callback)(const char *name, uint32_t size, uint8_t attr));
+bool fat32_change_dir(const char *path);
+
 uint32_t fat32_get_current_dir(void);
 bool fat32_set_current_dir(uint32_t cluster);
-bool fat32_change_dir(const char *path);
+const char* fat32_get_current_path(void);
