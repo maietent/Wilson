@@ -130,7 +130,6 @@ builds/isos/WilsonD.iso: bin/debug/kernel.elf bin/limine/limine
 	@mkdir -p bin/wilsonfs/EFI/BOOT
 	@cp bin/limine/BOOTX64.EFI bin/wilsonfs/EFI/BOOT/
 	@mkdir -p bin/wilsonfs/root
-	@echo "test" > bin/wilsonfs/root/test.txt
 	@xorriso -as mkisofs -R -J -b boot/limine/limine-bios-cd.bin -no-emul-boot \
 		-boot-load-size 4 -boot-info-table -hfsplus -apm-block-size 2048 \
 		--efi-boot boot/limine/limine-uefi-cd.bin -efi-boot-part --efi-boot-image \
@@ -149,7 +148,6 @@ builds/isos/Wilson.iso: bin/release/kernel.elf bin/limine/limine
 	@mkdir -p bin/wilsonfs/EFI/BOOT
 	@cp bin/limine/BOOTX64.EFI bin/wilsonfs/EFI/BOOT/
 	@mkdir -p bin/wilsonfs/root
-	@echo "test" > bin/wilsonfs/root/test.txt
 	@xorriso -as mkisofs -R -J -b boot/limine/limine-bios-cd.bin -no-emul-boot \
 		-boot-load-size 4 -boot-info-table -hfsplus -apm-block-size 2048 \
 		--efi-boot boot/limine/limine-uefi-cd.bin -efi-boot-part --efi-boot-image \
@@ -178,9 +176,9 @@ $(DISK_DEBUG): bin/debug/kernel.elf bin/limine/limine
 	sudo mkdir -p tmp_mnt/boot/limine; \
 	sudo cp bin/debug/kernel.elf tmp_mnt/boot/kernel.elf; \
 	sudo cp bin/limine/limine-bios.sys bin/limine/limine-bios-cd.bin bin/limine/limine-uefi-cd.bin tmp_mnt/boot/limine/; \
-	sudo cp bin/limine/limine-bios.sys tmp_mnt/; \
 	sudo cp limine.conf tmp_mnt/boot/limine/limine.conf; \
-	echo "test" | sudo tee tmp_mnt/test.txt > /dev/null; \
+	# Copy contents of wilsonfs to root of disk \
+	sudo cp -r wilsonfs/* tmp_mnt/; \
 	sudo umount tmp_mnt; \
 	sudo losetup -d $$LOOPDEV; \
 	rm -rf tmp_mnt
@@ -203,9 +201,9 @@ $(DISK_RELEASE): bin/release/kernel.elf bin/limine/limine
 	sudo mkdir -p tmp_mnt/boot/limine; \
 	sudo cp bin/release/kernel.elf tmp_mnt/boot/kernel.elf; \
 	sudo cp bin/limine/limine-bios.sys bin/limine/limine-bios-cd.bin bin/limine/limine-uefi-cd.bin tmp_mnt/boot/limine/; \
-	sudo cp bin/limine/limine-bios.sys tmp_mnt/; \
 	sudo cp limine.conf tmp_mnt/boot/limine/limine.conf; \
-	echo "test" | sudo tee tmp_mnt/test.txt > /dev/null; \
+	# Copy contents of wilsonfs to root of disk \
+	sudo cp -r wilsonfs/* tmp_mnt/; \
 	sudo umount tmp_mnt; \
 	sudo losetup -d $$LOOPDEV; \
 	rm -rf tmp_mnt

@@ -4,8 +4,7 @@
 #include "syscall.h"
 #include "ata.h"
 #include "pit.h"
-#include "ports.h"
-#include "klog.h"
+#include "fat32.h"
 
 void load_drivers(void)
 {
@@ -14,4 +13,5 @@ void load_drivers(void)
     keyboard_init();
     pit_init(1000);
     ata_init();
+    fat32_init();
 }

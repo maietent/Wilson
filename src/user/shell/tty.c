@@ -9,6 +9,7 @@
 #include "ata.h"
 #include "stdio.h"
 #include "pit.h"
+#include "fat32.h"
 
 char t_cmd_buf[TTY_CMD_BUF_SIZE];
 size_t t_cmd_len = 0;
@@ -29,6 +30,9 @@ t_command_t t_commands[] = {
     { "klog", "Print kernel log", t_cmd_klog },
     { "syscallc", "Test syscall", t_cmd_syscallc },
     { "ataread", "Read ATA sectors and dump bytes. Usage: ataread <lba> [offset]", t_cmd_ata_read },
+    { "ls", "List files in current directory", t_cmd_ls },
+    { "cd", "Change directory. Usage: cd <dirname>", t_cmd_cd },
+    { "cat", "Display file contents. Usage: cat <filename>", t_cmd_cat },
 };
 
 size_t t_command_count = sizeof(t_commands) / sizeof(t_commands[0]);
@@ -123,6 +127,77 @@ void t_cmd_ata_read(void)
             t_printf("\n");
     }
     t_printf("\n");
+}
+
+static void ls_callback(const char *name, uint32_t size, uint8_t attr)
+{
+    if (attr & FAT32_ATTR_DIRECTORY)
+        t_printf("[DIR]  %s\n", name);
+    else
+        t_printf("       %s (%u bytes)\n", name, size);
+}
+
+void t_cmd_ls(void)
+{
+    if (!fat32_list_dir(NULL, ls_callback)) {
+        t_printf("Failed to list directory\n");
+    }
+}
+
+void t_cmd_cd(void)
+{
+    if (!t_command_args || !*t_command_args) {
+        t_printf("Usage: cd <directory>\n");
+        return;
+    }
+
+    if (!fat32_change_dir(t_command_args)) {
+        t_printf("Directory not found: %s\n", t_command_args);
+    }
+}
+
+void t_cmd_cat(void)
+{
+    if (!t_command_args || !*t_command_args) {
+        t_printf("Usage: cat <filename>\n");
+        return;
+    }
+
+    fat32_file_t file;
+    if (!fat32_open(t_command_args, &file)) {
+        t_printf("Failed to open file: %s\n", t_command_args);
+        return;
+    }
+
+    if (file.attributes & FAT32_ATTR_DIRECTORY) {
+        t_printf("%s is a directory\n", t_command_args);
+        fat32_close(&file);
+        return;
+    }
+
+    if (file.file_size == 0) {
+        t_printf("(empty file)\n");
+        fat32_close(&file);
+        return;
+    }
+
+    uint8_t buffer[513];
+    uint32_t bytes_read = 0;
+    int result;
+
+    while ((result = fat32_read(&file, buffer, 512)) > 0) {
+        buffer[result] = '\0';
+        t_printf("%s", (char*)buffer);
+        bytes_read += result;
+    }
+
+    if (result < 0) {
+        t_printf("\nError reading file\n");
+    } else if (bytes_read > 0) {
+        t_printf("\n");
+    }
+
+    fat32_close(&file);
 }
 
 void t_clear_input_field(size_t input_len)

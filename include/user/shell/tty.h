@@ -42,5 +42,8 @@ void t_cmd_getticks(void);
 void t_cmd_klog(void);
 void t_cmd_syscallc(void);
 void t_cmd_ata_read(void);
+void t_cmd_ls(void);
+void t_cmd_cd(void);
+void t_cmd_cat(void);
 
 void t_tick();
