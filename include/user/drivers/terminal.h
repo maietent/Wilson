@@ -16,6 +16,5 @@ void t_set_bg_color(uint32_t color);
 void t_set_color(uint32_t color);
 void t_set_cell_bg(size_t x, size_t y, uint32_t color);
 
-// Getter functions for cursor support
 uint32_t t_get_fg_color(void);
 uint32_t t_get_bg_color(void);

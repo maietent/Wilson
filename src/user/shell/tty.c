@@ -305,6 +305,13 @@ void t_command_handler(void)
 
 void t_handle_keyboard(char key_char, uint8_t scancode)
 {
+    if (scancode == 0x48) { t_history_up(); return; }
+    if (scancode == 0x50) { t_history_down(); return; }
+
+    /* Ignore non-character keys (F1–F12, Ctrl, Alt, etc.) */
+    if (key_char == 0)
+        return;
+
     if (key_char == '\n')
     {
         t_command_handler();
@@ -324,9 +331,6 @@ void t_handle_keyboard(char key_char, uint8_t scancode)
         }
         return;
     }
-
-    if (scancode == 0x48) { t_history_up(); return; }
-    if (scancode == 0x50) { t_history_down(); return; }
 
     if (t_cmd_len < sizeof(t_cmd_buf) - 1)
     {

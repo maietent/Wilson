@@ -10,7 +10,10 @@
 #define KEYBOARD_CMD_PORT 0x64
 #define INTERRUPT_ACK 0x20
 
+#define SCANCODE_CAPS_LOCK 0x3A
+
 bool shift_pressed = false;
+bool caps_lock_enabled = false;
 
 extern void keyboard_handler_stub();
 
@@ -33,9 +36,35 @@ void keyboard_handler_c(void)
         return;
     }
 
+    if (key == SCANCODE_CAPS_LOCK && !released)
+    {
+        caps_lock_enabled = !caps_lock_enabled;
+        outb(0x20, INTERRUPT_ACK);
+        return;
+    }
+
     if (!released)
     {
-        char key_char = shift_pressed ? scancode_to_char_shift[key] : scancode_to_char[key];
+        char key_char;
+
+        bool is_letter =
+            (scancode_to_char[key] >= 'a' && scancode_to_char[key] <= 'z') ||
+            (scancode_to_char[key] >= 'A' && scancode_to_char[key] <= 'Z');
+
+        if (is_letter)
+        {
+            bool uppercase = shift_pressed ^ caps_lock_enabled;
+            key_char = uppercase
+            ? scancode_to_char_shift[key]
+            : scancode_to_char[key];
+        }
+        else
+        {
+            key_char = shift_pressed
+            ? scancode_to_char_shift[key]
+            : scancode_to_char[key];
+        }
+
         s_handle_keyboard(key_char, scancode);
     }
 
