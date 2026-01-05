@@ -1,6 +1,7 @@
 #include "pit.h"
 #include "idt.h"
 #include "ports.h"
+#include "klog.h"
 
 #define PIT_CHANNEL0 0x40
 #define PIT_COMMAND  0x43
@@ -10,8 +11,8 @@
 
 extern void pit_handler_stub(void);
 
-static volatile uint64_t pit_ticks = 0;
-static uint32_t pit_frequency = 100;
+volatile uint64_t pit_ticks = 0;
+static uint32_t pit_frequency = 1000;
 
 void pit_handler_c(void)
 {
@@ -43,8 +44,8 @@ uint64_t pit_get_ticks(void)
 void pit_sleep_ms(uint64_t ms)
 {
     uint64_t start = pit_ticks;
-    uint64_t wait_ticks = (pit_frequency * ms) / 1000;
+    uint64_t wait_ticks = (ms * pit_frequency) / 1000;
     while ((pit_ticks - start) < wait_ticks) {
-        __asm__ volatile("" ::: "memory");
+        asm volatile ("hlt");
     }
 }
