@@ -29,7 +29,7 @@ t_command_t t_commands[] = {
     { "clear", "Clear the terminal", t_cmd_clear },
     { "reboot", "Reboot the system", t_cmd_reboot },
     { "getticks", "Get the current PIT ticks", t_cmd_getticks },
-    { "sleep", "Sleep for 5 seconds", t_cmd_sleep },
+    { "sleep", "Sleep for specified milliseconds", t_cmd_sleep },
     { "klog", "Print kernel log", t_cmd_klog },
     { "syscallc", "Test syscall", t_cmd_syscallc },
     { "ataread", "Read ATA sectors and dump bytes. Usage: ataread <lba> [offset]", t_cmd_ata_read },
@@ -74,11 +74,21 @@ void t_cmd_getticks(void)
 
 void t_cmd_sleep(void)
 {
-    for (int i = 0; i < 5; i++)
+    if (!t_command_args)
     {
-        klogf("Tick %d\n", i);
-        sleep_ms(1000);
+        t_printf("Usage: sleep [ms]\n");
+        return;
     }
+
+    char* arg1 = strtok(t_command_args, " ");
+    if (!arg1)
+    {
+        t_printf("Usage: sleep [ms]\n");
+        return;
+    }
+
+    uint32_t ms = kstrtoul(arg1);
+    sleep_ms(ms);
 }
 
 void t_cmd_klog(void)
@@ -95,7 +105,8 @@ void t_cmd_syscallc(void)
 
 void t_cmd_ata_read(void)
 {
-    if (!t_command_args) {
+    if (!t_command_args)
+    {
         t_printf("Usage: ataread <lba> [offset]\n");
         return;
     }
@@ -103,7 +114,8 @@ void t_cmd_ata_read(void)
     char* arg1 = strtok(t_command_args, " ");
     char* arg2 = strtok(NULL, "");
 
-    if (!arg1) {
+    if (!arg1)
+    {
         t_printf("Missing LBA\n");
         return;
     }
@@ -111,20 +123,23 @@ void t_cmd_ata_read(void)
     uint32_t lba = kstrtoul(arg1);
     uint32_t offset = arg2 ? kstrtoul(arg2) : 0;
 
-    if (offset >= 512) {
+    if (offset >= 512)
+    {
         t_printf("Offset must be 0-511\n");
         return;
     }
 
     uint8_t buffer[512];
-    if (!ata_read_sector(lba, buffer)) {
+    if (!ata_read_sector(lba, buffer))
+    {
         t_printf("ATA read failed at LBA %u\n", lba);
         return;
     }
 
     t_printf("Sector %u bytes (offset %u):\n", lba, offset);
 
-    for (uint32_t i = offset; i < 512; i++) {
+    for (uint32_t i = offset; i < 512; i++)
+    {
         t_printf("%02X ", buffer[i]);
         if ((i - offset + 1) % 16 == 0)
             t_printf("\n");
@@ -142,43 +157,50 @@ static void ls_callback(const char *name, uint32_t size, uint8_t attr)
 
 void t_cmd_ls(void)
 {
-    if (!fat32_list_dir(NULL, ls_callback)) {
+    if (!fat32_list_dir(NULL, ls_callback))
+    {
         t_printf("Failed to list directory\n");
     }
 }
 
 void t_cmd_cd(void)
 {
-    if (!t_command_args || !*t_command_args) {
+    if (!t_command_args || !*t_command_args)
+    {
         t_printf("Usage: cd <directory>\n");
         return;
     }
 
-    if (!fat32_change_dir(t_command_args)) {
+    if (!fat32_change_dir(t_command_args))
+    {
         t_printf("Directory not found: %s\n", t_command_args);
     }
 }
 
 void t_cmd_cat(void)
 {
-    if (!t_command_args || !*t_command_args) {
+    if (!t_command_args || !*t_command_args)
+    {
         t_printf("Usage: cat <filename>\n");
         return;
     }
 
     fat32_file_t file;
-    if (!fat32_open(t_command_args, &file)) {
+    if (!fat32_open(t_command_args, &file))
+    {
         t_printf("Failed to open file: %s\n", t_command_args);
         return;
     }
 
-    if (file.attributes & FAT32_ATTR_DIRECTORY) {
+    if (file.attributes & FAT32_ATTR_DIRECTORY)
+    {
         t_printf("%s is a directory\n", t_command_args);
         fat32_close(&file);
         return;
     }
 
-    if (file.file_size == 0) {
+    if (file.file_size == 0)
+    {
         t_printf("(empty file)\n");
         fat32_close(&file);
         return;
@@ -188,15 +210,19 @@ void t_cmd_cat(void)
     uint32_t bytes_read = 0;
     int result;
 
-    while ((result = fat32_read(&file, buffer, 512)) > 0) {
+    while ((result = fat32_read(&file, buffer, 512)) > 0)
+    {
         buffer[result] = '\0';
         t_printf("%s", (char*)buffer);
         bytes_read += result;
     }
 
-    if (result < 0) {
+    if (result < 0)
+    {
         t_printf("\nError reading file\n");
-    } else if (bytes_read > 0) {
+    }
+    else if (bytes_read > 0)
+    {
         t_printf("\n");
     }
 
