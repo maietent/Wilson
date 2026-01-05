@@ -35,8 +35,8 @@ INCLUDE_DIRS := $(shell find include -type d)
 INCLUDES := $(foreach dir, $(INCLUDE_DIRS), -I$(dir))
 
 # disk image paths
-DISK_DEBUG := builds/img/disk-debug.img
-DISK_RELEASE := builds/img/disk-release.img
+DISK_DEBUG := builds/img/WilsonD.img
+DISK_RELEASE := builds/img/Wilson.img
 DISK_SIZE_MB := 96
 
 # ensure bin and builds directories
